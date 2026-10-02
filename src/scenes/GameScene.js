@@ -6,9 +6,10 @@ import { generateDungeon } from '../dungeon/Dungeon.js';
 import { DungeonBuilder } from '../dungeon/DungeonBuilder.js';
 import { ExitPortal } from '../dungeon/ExitPortal.js';
 
-// Rojos y naranjas por nivel 1, fuera de la sala inicial (pasos 4 y 5a).
+// Rojos, naranjas y amarillos por nivel 1, fuera de la sala inicial.
 const BASIC_COUNT = 4;
 const PURSUER_COUNT = 2;
+const SWORDSMAN_COUNT = 2;
 const SPAWN_MIN_DIST = 500;
 
 export class GameScene extends Phaser.Scene {
@@ -62,6 +63,7 @@ export class GameScene extends Phaser.Scene {
     const placements = [
       ...Array(BASIC_COUNT).fill('basic'),
       ...Array(PURSUER_COUNT).fill('pursuer'),
+      ...Array(SWORDSMAN_COUNT).fill('swordsman'),
     ];
     for (const type of placements) {
       if (options.length === 0) break;

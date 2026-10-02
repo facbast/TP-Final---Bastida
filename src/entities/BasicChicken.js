@@ -3,10 +3,17 @@ import { Enemy } from './Enemy.js';
 
 // Pollo básico rojo (GDD, NPCs, p. 2): movimiento errático.
 // Decisiones de usuario del paso 4: vida 2, 10 pts + 1 exp.
+// Acepta variantes vía opts (el espadachín reutiliza este movimiento).
 export class BasicChicken extends Enemy {
-  constructor(scene, x, y) {
-    super(scene, x, y, { hp: 2, score: 10, exp: 1, color: 0xff0000, size: 30 });
-    this.speed = 120;
+  constructor(scene, x, y, opts = {}) {
+    super(scene, x, y, {
+      hp: opts.hp ?? 2,
+      score: opts.score ?? 10,
+      exp: opts.exp ?? 1,
+      color: opts.color ?? 0xff0000,
+      size: opts.size ?? 30,
+    });
+    this.speed = opts.speed ?? 120;
     this.dir = new Phaser.Math.Vector2(1, 0);
     this.changeAt = 0;
     this.pickDirection();
