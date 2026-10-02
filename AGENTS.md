@@ -39,9 +39,12 @@ modificar el proyecto.
   (Phaser.Graphics o dibujado procedural). Jugador: cuadrado azul. Enemigos:
   triángulos de colores/tamaños según clase. No hay carpeta de assets ni sprites
   externos; no inventar nombres ni rutas de recursos.
-- **Git:** sin repositorio ni Git funcional en la terminal a la fecha de este
-  archivo. Flujo registrado en la sección 8; su aplicación queda pendiente hasta
-  instalar Git y configurar repo y remoto.
+- **Git:** repositorio inicializado con Git 2.55.0 (instalación por usuario),
+  remoto `https://github.com/facbast/TP-Final---Bastida.git` (repo público
+  existente, rama base `main`). Invocar vía
+  `"$env:LOCALAPPDATA\Programs\Git\cmd\git.exe"`. Rama de trabajo actual:
+  `feature/base-juego` (con seguimiento a `origin/feature/base-juego`).
+  Identidad local: `facbast` + email no-reply de GitHub.
 
 ## 1. Alcance y contexto
 

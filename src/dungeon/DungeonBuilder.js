@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 
 // Construye la mazmorra en la escena: fondo de roca, suelo por celdas y
 // muros estáticos en cada celda sólida adyacente al suelo.
-export const CELL = 80;
+export const CELL = 160;
 
 export class DungeonBuilder {
   constructor(scene) {

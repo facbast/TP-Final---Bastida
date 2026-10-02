@@ -84,9 +84,11 @@ export class GameScene extends Phaser.Scene {
     this.gameEnded = true;
     this.player.body.setVelocity(0, 0);
     const cam = this.cameras.main;
-    this.add.rectangle(400, 300, cam.width, cam.height, 0x000000, 0.7).setScrollFactor(0);
+    const cx = cam.width / 2;
+    const cy = cam.height / 2;
+    this.add.rectangle(cx, cy, cam.width, cam.height, 0x000000, 0.7).setScrollFactor(0);
     this.add
-      .text(400, 280, 'GAME OVER', {
+      .text(cx, cy - 20, 'GAME OVER', {
         fontFamily: 'monospace',
         fontSize: '48px',
         color: '#ff3355',
@@ -94,7 +96,7 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScrollFactor(0);
     this.add
-      .text(400, 340, 'Pulsa R para reiniciar', {
+      .text(cx, cy + 40, 'Pulsa R para reiniciar', {
         fontFamily: 'monospace',
         fontSize: '20px',
         color: '#ffffff',
