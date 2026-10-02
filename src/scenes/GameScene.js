@@ -6,8 +6,9 @@ import { generateDungeon } from '../dungeon/Dungeon.js';
 import { DungeonBuilder } from '../dungeon/DungeonBuilder.js';
 import { ExitPortal } from '../dungeon/ExitPortal.js';
 
-// Rojos por nivel 1, fuera de la sala inicial (decisión paso 4).
+// Rojos y naranjas por nivel 1, fuera de la sala inicial (pasos 4 y 5a).
 const BASIC_COUNT = 4;
+const PURSUER_COUNT = 2;
 const SPAWN_MIN_DIST = 500;
 
 export class GameScene extends Phaser.Scene {
@@ -58,12 +59,16 @@ export class GameScene extends Phaser.Scene {
 
   spawnEnemies(built) {
     const options = built.rooms.slice(1);
-    for (let n = 0; n < BASIC_COUNT && options.length > 0; n += 1) {
+    const placements = [
+      ...Array(BASIC_COUNT).fill('basic'),
+      ...Array(PURSUER_COUNT).fill('pursuer'),
+    ];
+    for (const type of placements) {
+      if (options.length === 0) break;
       const room = Phaser.Utils.Array.RemoveRandomElement(options);
       const pos = this.roomPosition(room, built.spawn);
       if (!pos) continue;
-      const enemy = createEnemy(this, 'basic', pos.x, pos.y);
-      this.enemies.add(enemy);
+      this.enemies.add(createEnemy(this, type, pos.x, pos.y));
     }
     this.physics.add.collider(this.enemies, this.walls, (enemy) => {
       enemy.pickDirection?.();
