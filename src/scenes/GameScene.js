@@ -11,10 +11,11 @@ import arrowUrl from '../../Assets/weapon_arrow.png';
 import bowArrowUrl from '../../Assets/weapon_bow_arrow.png';
 import staffUrl from '../../Assets/weapon_staff.png';
 
-// Rojos, naranjas y amarillos por nivel 1, fuera de la sala inicial.
+// Rojos, naranjas, amarillos y verdes por nivel 1, fuera de la sala inicial.
 const BASIC_COUNT = 4;
 const PURSUER_COUNT = 2;
 const SWORDSMAN_COUNT = 2;
+const TOXIC_COUNT = 2;
 const SPAWN_MIN_DIST = 500;
 
 export class GameScene extends Phaser.Scene {
@@ -50,8 +51,10 @@ export class GameScene extends Phaser.Scene {
     });
     const built = new DungeonBuilder(this).build(dungeon);
 
-    // Grupos de dominio: enemigos (paso 4), interactuables (tesoros paso 6) y muros.
+    // Grupos de dominio: enemigos (pasos 4-5), interactuables (tesoros paso 6),
+    // peligros de zona (charcos) y muros.
     this.enemies = this.physics.add.group();
+    this.hazards = this.physics.add.staticGroup();
     this.interactables = this.add.group();
     this.walls = built.walls;
     this.player = new Player(this, built.spawn.x, built.spawn.y, {
@@ -61,6 +64,10 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.walls);
     // Contacto base: medio corazón por golpe (decisión paso 2).
     this.physics.add.overlap(this.player, this.enemies, (player) => {
+      player.takeHit(1);
+    });
+    // Charcos de toxina: medio corazón por golpe (paso 5c).
+    this.physics.add.overlap(this.player, this.hazards, (player) => {
       player.takeHit(1);
     });
 
@@ -82,6 +89,7 @@ export class GameScene extends Phaser.Scene {
       ...Array(BASIC_COUNT).fill('basic'),
       ...Array(PURSUER_COUNT).fill('pursuer'),
       ...Array(SWORDSMAN_COUNT).fill('swordsman'),
+      ...Array(TOXIC_COUNT).fill('toxic'),
     ];
     for (const type of placements) {
       if (options.length === 0) break;
