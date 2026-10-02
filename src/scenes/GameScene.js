@@ -5,6 +5,11 @@ import { createEnemy } from '../entities/EnemyFactory.js';
 import { generateDungeon } from '../dungeon/Dungeon.js';
 import { DungeonBuilder } from '../dungeon/DungeonBuilder.js';
 import { ExitPortal } from '../dungeon/ExitPortal.js';
+import longswordUrl from '../../Assets/weapon_longsword.png';
+import bowUrl from '../../Assets/weapon_bow.png';
+import arrowUrl from '../../Assets/weapon_arrow.png';
+import bowArrowUrl from '../../Assets/weapon_bow_arrow.png';
+import staffUrl from '../../Assets/weapon_staff.png';
 
 // Rojos, naranjas y amarillos por nivel 1, fuera de la sala inicial.
 const BASIC_COUNT = 4;
@@ -17,11 +22,24 @@ export class GameScene extends Phaser.Scene {
     super('GameScene');
   }
 
+  preload() {
+    // Pixel-art blanco pensado para tintes por clase (carpeta Assets/).
+    this.load.image('weapon-longsword', longswordUrl);
+    this.load.image('weapon-bow', bowUrl);
+    this.load.image('weapon-arrow', arrowUrl);
+    this.load.image('weapon-bow-arrow', bowArrowUrl);
+    this.load.image('weapon-staff', staffUrl);
+  }
+
   create(data = {}) {
     // Estado de la partida que persiste entre niveles (GDD, Persistencia, p. 2).
     const run = data.run ?? { level: 1, halves: 6, lives: 3, score: 0, exp: 0 };
     this.run = run;
     this.level = run.level;
+    // Pixel nítido para el pixel-art de armas.
+    for (const key of ['weapon-longsword', 'weapon-bow', 'weapon-arrow', 'weapon-bow-arrow', 'weapon-staff']) {
+      this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
     const dungeon = generateDungeon({
       seed: (Math.random() * 2 ** 31) | 0,
       cols: 30,

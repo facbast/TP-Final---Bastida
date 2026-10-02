@@ -35,10 +35,13 @@ modificar el proyecto.
 - **Controles PC vigentes (GDD, tabla de Controles):** Este = FLECHA DERECHA,
   Oeste = FLECHA IZQUIERDA, Norte = FLECHA ARRIBA, Sur = FLECHA ABAJO,
   Dash = Z, Ataque = X, Interactuar = C. Controles móviles: no definidos.
-- **Gráficos:** estilo definitivo con formas geométricas generadas por código
-  (Phaser.Graphics o dibujado procedural). Jugador: cuadrado azul. Enemigos:
-  triángulos de colores/tamaños según clase. No hay carpeta de assets ni sprites
-  externos; no inventar nombres ni rutas de recursos.
+- **Gráficos:** estilo geométrico generado por código para entidades y mazmorra
+  (jugador: cuadrado azul; enemigos: triángulos por color/tamaño) + dibujos de
+  armas en `Assets/` (pixel-art blanco 128×128 pensado para tintes).
+  Armas de enemigos con tinte del color de su clase (ej.: espada amarilla del
+  espadachín). Jugador: espada larga en el golpe cuerpo a cuerpo, flechas como
+  proyectiles; báculo reservado (mago). Carga vía imports de Vite en
+  `GameScene.preload` + filtro NEAREST. No inventar nombres ni rutas.
 - **Git:** repositorio inicializado con Git 2.55.0 (instalación por usuario),
   remoto `https://github.com/facbast/TP-Final---Bastida.git` (repo público
   existente, rama base `main`). Invocar vía
@@ -176,11 +179,14 @@ Antes de crear clases, componentes, servicios o utilidades:
 Si no existe código reutilizable, indicarlo y diseñar una solución coherente con
 el proyecto.
 
-## 7. Recursos gráficos: formas geométricas
+## 7. Recursos gráficos: geométricos + assets de armas
 
-Los gráficos del juego se generan con formas geométricas por código (estilo
-definitivo, no provisional): jugador como cuadrado azul y enemigos como
-triángulos de colores y tamaños según su clase (ver sección 0).
+Las entidades y la mazmorra usan formas geométricas por código (estilo vigente):
+jugador como cuadrado azul y enemigos como triángulos de colores y tamaños según
+su clase (ver sección 0). Las armas usan los dibujos de `Assets/`
+(`weapon_arrow.png`, `weapon_bow.png`, `weapon_bow_arrow.png`,
+`weapon_longsword.png`, `weapon_staff.png`), pixel-art blanco para aplicar
+tinte del color de la clase en armas enemigas.
 
 Cuando una tarea requiera un elemento visual no cubierto por este estilo:
 

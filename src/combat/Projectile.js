@@ -1,11 +1,14 @@
 import Phaser from 'phaser';
 
-// Proyectil geométrico: daña al primer enemigo alcanzado o muere contra muros.
-export class Projectile extends Phaser.GameObjects.Rectangle {
+// Proyectil con dibujo de flecha del asset (apunta según su dirección).
+export class Projectile extends Phaser.GameObjects.Image {
   constructor(scene, x, y, facing, speed, damage, lifespan = 900) {
-    super(scene, x, y, 10, 10, 0xffff00);
+    super(scene, x, y, 'weapon-arrow');
     scene.add.existing(this);
     scene.physics.add.existing(this);
+    this.setScale(0.35);
+    this.setRotation(Math.atan2(facing.y, facing.x) + Math.PI / 2);
+    this.body.setSize(64, 64, true);
     this.damage = damage;
     this.body.setVelocity(facing.x * speed, facing.y * speed);
     scene.physics.add.overlap(this, scene.enemies, (proj, enemy) => {

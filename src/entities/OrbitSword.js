@@ -1,18 +1,20 @@
 import Phaser from 'phaser';
 
-// Espada orbital del espadachín: orbita a su alrededor y detecta cuándo
-// apunta al jugador (disparador del dash). Visual, sin daño propio.
-// Decisiones de usuario del paso 5b (no son reglas del GDD):
-// órbita 60 px / 4 s por vuelta, apuntado ±15° a 350 px.
+// Espada orbital del espadachín: dibujo del asset con tinte amarillo de clase.
+// Detecta cuándo apunta al jugador (disparador del dash). Visual, sin daño.
+// Decisiones de usuario (no son reglas del GDD): órbita 60 px / 4 s por vuelta,
+// apuntado ±15° a 350 px.
 const ORBIT_RADIUS = 60;
-const ORBIT_PERIOD = 4000;
+const ORBIT_PERIOD = 6000;
 const AIM_TOLERANCE = Phaser.Math.DegToRad(15);
 const AIM_RANGE = 350;
 
-export class OrbitSword extends Phaser.GameObjects.Rectangle {
+export class OrbitSword extends Phaser.GameObjects.Image {
   constructor(scene, owner) {
-    super(scene, owner.x + ORBIT_RADIUS, owner.y, 26, 8, 0xffffff);
+    super(scene, owner.x + ORBIT_RADIUS, owner.y, 'weapon-longsword');
     scene.add.existing(this);
+    this.setScale(0.5);
+    this.setTint(0xffdd22);
     this.owner = owner;
     this.angle = 0;
   }
@@ -27,7 +29,8 @@ export class OrbitSword extends Phaser.GameObjects.Rectangle {
       this.owner.x + Math.cos(this.angle) * ORBIT_RADIUS,
       this.owner.y + Math.sin(this.angle) * ORBIT_RADIUS,
     );
-    this.setRotation(this.angle);
+    // El dibujo apunta hacia arriba: rotar para que el filo mire hacia afuera.
+    this.setRotation(this.angle + Math.PI / 2);
   }
 
   aimsAtPlayer() {
