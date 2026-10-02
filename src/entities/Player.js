@@ -7,14 +7,15 @@ import { Health } from './Health.js';
 // Dash = Z (impulso con invulnerabilidad, cooldown 1 s),
 // Ataque = X (delega en el arma equipada), Interactuar = C.
 // Parámetros de dash/ataque: decisiones de usuario del paso 1.
-const SPEED = 320;
+const SPEED = 400;
 // Daño base por contacto: medio corazón (decisión paso 2; rige hasta la
 // tabla definitiva de enemigos del paso 4). Invulnerabilidad tras golpe: 1 s.
 // Respawn: en posición de muerte, salud completa, invulnerable 2 s.
 const HIT_IFRAMES = 1000;
 const RESPAWN_IFRAMES = 2000;
 const DASH_SPEED = 950;
-const DASH_TIME = 180;
+const DASH_MIN_TIME = 180;
+const DASH_MAX_TIME = 450;
 const DASH_COOLDOWN = 1000;
 
 export class Player extends Phaser.GameObjects.Rectangle {
@@ -37,6 +38,7 @@ export class Player extends Phaser.GameObjects.Rectangle {
     }
     this.weapon = new MeleeWeapon(scene);
     this.dashUntil = 0;
+    this.dashMaxUntil = 0;
     this.dashReadyAt = 0;
     this.invulnerableUntil = 0;
     const kb = scene.input.keyboard;
@@ -73,9 +75,19 @@ export class Player extends Phaser.GameObjects.Rectangle {
       !this.isDashing(time)
     ) {
       this.dashDir.copy(this.facing);
-      this.dashUntil = time + DASH_TIME;
+      this.dashUntil = time + DASH_MIN_TIME;
+      this.dashMaxUntil = time + DASH_MAX_TIME;
       this.dashReadyAt = time + DASH_COOLDOWN;
-      this.invulnerableUntil = time + DASH_TIME;
+      this.invulnerableUntil = this.dashUntil;
+    }
+    if (this.isDashing(time)) {
+      if (dash.isDown && time < this.dashMaxUntil) {
+        // Mantener Z extiende el dash hasta el máximo.
+        this.dashUntil = Math.min(time + 60, this.dashMaxUntil);
+        this.invulnerableUntil = this.dashUntil;
+      } else {
+        this.dashUntil = Math.min(this.dashUntil, time);
+      }
     }
     const move = this.isDashing(time) ? this.dashDir : dir;
     const speed = this.isDashing(time) ? DASH_SPEED : SPEED;

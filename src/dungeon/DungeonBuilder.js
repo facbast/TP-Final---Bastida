@@ -59,6 +59,12 @@ export class DungeonBuilder {
       walls,
       spawn: toWorld(dungeon.spawnCell),
       exit: toWorld(dungeon.exitCell),
+      rooms: dungeon.rooms.map((r) => ({
+        x: r.x * CELL,
+        y: r.y * CELL,
+        w: r.w * CELL,
+        h: r.h * CELL,
+      })),
     };
   }
 }

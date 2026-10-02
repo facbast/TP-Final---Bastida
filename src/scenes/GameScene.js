@@ -1,9 +1,14 @@
 import Phaser from 'phaser';
 import { Player } from '../entities/Player.js';
 import { Hud } from '../ui/Hud.js';
+import { createEnemy } from '../entities/EnemyFactory.js';
 import { generateDungeon } from '../dungeon/Dungeon.js';
 import { DungeonBuilder } from '../dungeon/DungeonBuilder.js';
 import { ExitPortal } from '../dungeon/ExitPortal.js';
+
+// Rojos por nivel 1, fuera de la sala inicial (decisión paso 4).
+const BASIC_COUNT = 4;
+const SPAWN_MIN_DIST = 500;
 
 export class GameScene extends Phaser.Scene {
   constructor() {
@@ -13,6 +18,7 @@ export class GameScene extends Phaser.Scene {
   create(data = {}) {
     // Estado de la partida que persiste entre niveles (GDD, Persistencia, p. 2).
     const run = data.run ?? { level: 1, halves: 6, lives: 3, score: 0, exp: 0 };
+    this.run = run;
     this.level = run.level;
     const dungeon = generateDungeon({
       seed: (Math.random() * 2 ** 31) | 0,
@@ -39,6 +45,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.interactables.add(new ExitPortal(this, built.exit.x, built.exit.y));
+    this.spawnEnemies(built);
 
     this.hud = new Hud(this, this.player);
     this.hud.refresh();
@@ -47,9 +54,37 @@ export class GameScene extends Phaser.Scene {
     const cam = this.cameras.main;
     cam.setBounds(0, 0, built.width, built.height);
     cam.startFollow(this.player, false, 0.12, 0.12);
+  }
 
-    // Enemigo básico (rojo): triángulo, solo visual por ahora (paso 4).
-    this.add.triangle(built.spawn.x + 120, built.spawn.y, 0, 32, 32, 32, 16, 0, 0xff0000);
+  spawnEnemies(built) {
+    const options = built.rooms.slice(1);
+    for (let n = 0; n < BASIC_COUNT && options.length > 0; n += 1) {
+      const room = Phaser.Utils.Array.RemoveRandomElement(options);
+      const pos = this.roomPosition(room, built.spawn);
+      if (!pos) continue;
+      const enemy = createEnemy(this, 'basic', pos.x, pos.y);
+      this.enemies.add(enemy);
+    }
+    this.physics.add.collider(this.enemies, this.walls, (enemy) => {
+      enemy.pickDirection?.();
+    });
+  }
+
+  roomPosition(room, spawn) {
+    for (let tries = 0; tries < 10; tries += 1) {
+      const x = room.x + 100 + Math.random() * (room.w - 200);
+      const y = room.y + 100 + Math.random() * (room.h - 200);
+      if (Phaser.Math.Distance.Between(x, y, spawn.x, spawn.y) >= SPAWN_MIN_DIST) {
+        return { x, y };
+      }
+    }
+    return null;
+  }
+
+  onEnemyKilled(enemy) {
+    this.run.score += enemy.score;
+    this.run.exp += enemy.exp;
+    this.hud?.refresh();
   }
 
   nextLevel() {
@@ -68,6 +103,9 @@ export class GameScene extends Phaser.Scene {
   update(time, delta) {
     if (this.gameEnded) return;
     this.player.update(time, delta);
+    for (const enemy of this.enemies.getChildren()) {
+      enemy.update?.(time, delta);
+    }
     this.updateCameraLookahead();
   }
 
