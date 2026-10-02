@@ -24,6 +24,11 @@ export class Swordsman extends BasicChicken {
 
   update(time, delta) {
     if (this.dead) return;
+    if (this.isStaggered(time)) {
+      this.body.setVelocity(this.knockVel.x, this.knockVel.y);
+      this.sword.update(time, delta);
+      return;
+    }
     if (this.swordState === 'windup') {
       this.body.setVelocity(0, 0);
       this.setAlpha(0.4 + 0.6 * Math.abs(Math.sin(time / 80)));

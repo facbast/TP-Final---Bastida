@@ -26,6 +26,10 @@ export class BasicChicken extends Enemy {
 
   update(time) {
     if (this.dead) return;
+    if (this.isStaggered(time)) {
+      this.body.setVelocity(this.knockVel.x, this.knockVel.y);
+      return;
+    }
     this.body.setVelocity(this.dir.x * this.speed, this.dir.y * this.speed);
     if (time >= this.changeAt) {
       this.pickDirection();

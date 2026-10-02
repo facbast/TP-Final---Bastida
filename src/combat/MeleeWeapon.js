@@ -29,6 +29,7 @@ export class MeleeWeapon extends Weapon {
       if (!hit.has(enemy)) {
         hit.add(enemy);
         enemy.takeDamage?.(this.damage);
+        if (enemy.active) enemy.applyKnockback?.(attacker.x, attacker.y);
       }
     });
 

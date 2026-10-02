@@ -13,6 +13,22 @@ export class Enemy extends Phaser.GameObjects.Triangle {
     this.score = score;
     this.exp = exp;
     this.dead = false;
+    this.knockVel = new Phaser.Math.Vector2(0, 0);
+    this.knockUntil = 0;
+  }
+
+  isStaggered(time) {
+    return time < this.knockUntil;
+  }
+
+  // Empujón con aturdido breve: la IA no lo sobrescribe mientras dura.
+  applyKnockback(fromX, fromY, speed = 380, duration = 180) {
+    const dir = new Phaser.Math.Vector2(this.x - fromX, this.y - fromY);
+    if (dir.lengthSq() === 0) dir.set(1, 0);
+    dir.normalize();
+    this.knockVel.copy(dir).scale(speed);
+    this.knockUntil = this.scene.time.now + duration;
+    this.body.setVelocity(this.knockVel.x, this.knockVel.y);
   }
 
   takeDamage(amount = 1) {

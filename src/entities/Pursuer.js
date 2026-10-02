@@ -36,6 +36,10 @@ export class Pursuer extends Enemy {
 
   update(time) {
     if (this.dead) return;
+    if (this.isStaggered(time)) {
+      this.body.setVelocity(this.knockVel.x, this.knockVel.y);
+      return;
+    }
     const dist = this.playerDist();
     if (this.state === 'wander') {
       if (dist < DETECT_DIST) {
