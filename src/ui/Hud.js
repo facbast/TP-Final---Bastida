@@ -18,6 +18,9 @@ export class Hud {
     this.livesText = scene.add
       .text(16, 44, '', { fontFamily: 'monospace', fontSize: '16px', color: '#ffffff' })
       .setScrollFactor(0);
+    this.levelText = scene.add
+      .text(16, 66, '', { fontFamily: 'monospace', fontSize: '16px', color: '#ffffff' })
+      .setScrollFactor(0);
     player.health.onChanged(() => this.refresh());
   }
 
@@ -43,5 +46,6 @@ export class Hud {
       this.heartImgs[i].setTexture(`heart-${this.player.health.stateOf(i)}`);
     }
     this.livesText.setText(`Vidas: ${this.player.lives}`);
+    this.levelText.setText(`Nivel: ${this.scene.level ?? 1}`);
   }
 }

@@ -18,7 +18,7 @@ const DASH_TIME = 180;
 const DASH_COOLDOWN = 1000;
 
 export class Player extends Phaser.GameObjects.Rectangle {
-  constructor(scene, x, y) {
+  constructor(scene, x, y, snapshot = {}) {
     super(scene, x, y, 32, 32, 0x0000ff);
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -27,7 +27,14 @@ export class Player extends Phaser.GameObjects.Rectangle {
     this.dashDir = this.facing.clone();
     this.moveDir = new Phaser.Math.Vector2(0, 0);
     this.health = new Health(3);
-    this.lives = 3;
+    this.lives = snapshot.lives ?? 3;
+    if (snapshot.halves !== undefined) {
+      this.health.halves = Phaser.Math.Clamp(
+        snapshot.halves,
+        0,
+        this.health.maxHalves,
+      );
+    }
     this.weapon = new MeleeWeapon(scene);
     this.dashUntil = 0;
     this.dashReadyAt = 0;
