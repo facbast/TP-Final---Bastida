@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 // Enemigo base: triángulo con vida; al morir otorga puntos y experiencia.
 // El daño recibido llega vía takeDamage (armas del jugador, paso 1).
 export class Enemy extends Phaser.GameObjects.Triangle {
-  constructor(scene, x, y, { hp = 2, score = 10, exp = 1, color = 0xff0000, size = 30 } = {}) {
+  constructor(scene, x, y, { hp = 2, score = 10, color = 0xff0000, size = 30 } = {}) {
     super(scene, x, y, 0, size, size, size, size / 2, 0, color);
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -11,7 +11,6 @@ export class Enemy extends Phaser.GameObjects.Triangle {
     this.maxHp = hp;
     this.hp = hp;
     this.score = score;
-    this.exp = exp;
     this.dead = false;
     this.knockVel = new Phaser.Math.Vector2(0, 0);
     this.knockUntil = 0;

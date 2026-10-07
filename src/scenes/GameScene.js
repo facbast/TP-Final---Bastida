@@ -8,6 +8,7 @@ import { ExitPortal } from '../dungeon/ExitPortal.js';
 import { Treasure } from '../entities/Treasure.js';
 import { SpikeTrap } from '../entities/SpikeTrap.js';
 import { TimedSpikes } from '../entities/TimedSpikes.js';
+import { SCORE_NEXT } from '../balance.js';
 import longswordUrl from '../../Assets/weapon_longsword.png';
 import bowUrl from '../../Assets/weapon_bow.png';
 import arrowUrl from '../../Assets/weapon_arrow.png';
@@ -22,8 +23,7 @@ const TOXIC_COUNT = 2;
 const GUNNER_COUNT = 2;
 const MAGE_COUNT = 1;
 const SPAWN_MIN_DIST = 500;
-// Subida de nivel de jugador (decisión paso 6): 10 exp fijas por nivel.
-const EXP_NEXT = 10;
+// Subida de nivel de jugador (decisión de usuario, en puntos; ver balance.js).
 const TREASURE_VALUE = 25;
 // Trampas por nivel 1 (decisión paso 7): 6 fijas + 3 temporizadas.
 const SPIKE_COUNT = 6;
@@ -57,7 +57,6 @@ export class GameScene extends Phaser.Scene {
       halves: 6,
       lives: 3,
       score: 0,
-      exp: 0,
       playerLevel: 1,
     };
     this.run = run;
@@ -196,7 +195,6 @@ export class GameScene extends Phaser.Scene {
 
   onEnemyKilled(enemy) {
     this.run.score += enemy.score;
-    this.run.exp += enemy.exp;
     this.hud?.refresh();
     this.checkLevelUp();
   }
@@ -227,12 +225,13 @@ export class GameScene extends Phaser.Scene {
     });
     treasure.destroy();
     this.hud?.refresh();
+    this.checkLevelUp();
   }
 
   checkLevelUp() {
     if (this.levelUpOpen || this.gameEnded) return;
-    if (this.run.exp < EXP_NEXT) return;
-    this.run.exp -= EXP_NEXT;
+    if (this.run.score < SCORE_NEXT) return;
+    this.run.score -= SCORE_NEXT;
     this.run.playerLevel += 1;
     this.player.lives += 1;
     this.openBonusChoice();
@@ -290,7 +289,6 @@ export class GameScene extends Phaser.Scene {
         halves: this.player.health.halves,
         lives: this.player.lives,
         score: this.run.score,
-        exp: this.run.exp,
         playerLevel: this.run.playerLevel,
         maxHearts: this.player.health.maxHearts,
         speedMul: this.player.speedMul,

@@ -7,7 +7,7 @@ const DRIP_EVERY = 2500;
 
 export class Toxic extends BasicChicken {
   constructor(scene, x, y) {
-    super(scene, x, y, { hp: 3, score: 20, exp: 2, color: 0x33cc44, size: 32 });
+    super(scene, x, y, { hp: 3, score: 20, color: 0x33cc44, size: 32 });
     this.nextDrip = 0;
   }
 

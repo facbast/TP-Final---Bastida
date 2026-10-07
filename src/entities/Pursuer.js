@@ -15,7 +15,7 @@ const SLEEP_MAX = 4000;
 
 export class Pursuer extends Enemy {
   constructor(scene, x, y) {
-    super(scene, x, y, { hp: 3, score: 20, exp: 2, color: 0xff8800, size: 34 });
+    super(scene, x, y, { hp: 3, score: 20, color: 0xff8800, size: 34 });
     this.state = 'wander';
     this.dir = new Phaser.Math.Vector2(1, 0);
     this.changeAt = 0;

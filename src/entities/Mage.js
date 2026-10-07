@@ -15,7 +15,7 @@ const STAFF_COOLDOWN = 1500;
 
 export class Mage extends Enemy {
   constructor(scene, x, y) {
-    super(scene, x, y, { hp: 5, score: 40, exp: 4, color: 0x3388ff, size: 34 });
+    super(scene, x, y, { hp: 5, score: 40, color: 0x3388ff, size: 34 });
     this.nextStaff = 0;
   }
 

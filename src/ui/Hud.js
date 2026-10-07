@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SCORE_NEXT } from '../balance.js';
 
 // HUD fijo en cámara: corazones geométricos (rojo = entero,
 // naranja = medio, gris = vacío) y contador de vidas.
@@ -59,8 +60,6 @@ export class Hud {
     }
     this.livesText.setText(`Vidas: ${this.player.lives}`);
     this.levelText.setText(`Nivel: ${this.scene.level ?? 1} PJ:${this.scene.run?.playerLevel ?? 1}`);
-    this.scoreText.setText(
-      `Puntos: ${this.scene.run?.score ?? 0} Exp: ${this.scene.run?.exp ?? 0}`,
-    );
+    this.scoreText.setText(`Puntos: ${this.scene.run?.score ?? 0}/${SCORE_NEXT}`);
   }
 }

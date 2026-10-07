@@ -9,7 +9,6 @@ export class BasicChicken extends Enemy {
     super(scene, x, y, {
       hp: opts.hp ?? 2,
       score: opts.score ?? 10,
-      exp: opts.exp ?? 1,
       color: opts.color ?? 0xff0000,
       size: opts.size ?? 30,
     });

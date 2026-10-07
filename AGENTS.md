@@ -24,6 +24,9 @@ modificar el proyecto.
   con salud completa); subir de nivel por puntos otorga vida extra + elección de
   bonificación a estadísticas; puntuación, salud, experiencia y vidas persisten
   entre niveles; victoria al derrotar al jefe Pollo Morado al final del nivel 5.
+  **Divergencia decidida por el usuario** (difiere del GDD, Objetivo, p. 2):
+  la experiencia se eliminó como moneda; todo otorga puntos y el jugador sube
+  de nivel cada 200 puntos (`src/balance.js`).
 - **Enemigos (NPCs):** triángulos; la clase se distingue por color y tamaño.
   Rojos básicos (contacto); Naranjas perseguidores (persiguen en su área, se cansan
   y duermen, retoman si el jugador se acerca); Amarillos espadachines (espada que

@@ -17,7 +17,7 @@ const FIRE_COOLDOWN = 2000;
 
 export class Gunner extends Enemy {
   constructor(scene, x, y) {
-    super(scene, x, y, { hp: 3, score: 25, exp: 2, color: 0x44ccff, size: 30 });
+    super(scene, x, y, { hp: 3, score: 25, color: 0x44ccff, size: 30 });
     this.nextShot = 0;
     this.strafeDir = 1;
     this.strafeAt = 0;

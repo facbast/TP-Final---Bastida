@@ -13,7 +13,7 @@ const DASH_COOLDOWN = 3000;
 
 export class Swordsman extends BasicChicken {
   constructor(scene, x, y) {
-    super(scene, x, y, { hp: 4, score: 30, exp: 3, color: 0xffdd22, size: 32 });
+    super(scene, x, y, { hp: 4, score: 30, color: 0xffdd22, size: 32 });
     this.sword = new OrbitSword(scene, this);
     this.swordState = 'wander';
     this.dashAt = 0;
