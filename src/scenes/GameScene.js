@@ -8,26 +8,18 @@ import { ExitPortal } from '../dungeon/ExitPortal.js';
 import { Treasure } from '../entities/Treasure.js';
 import { SpikeTrap } from '../entities/SpikeTrap.js';
 import { TimedSpikes } from '../entities/TimedSpikes.js';
-import { SCORE_NEXT } from '../balance.js';
+import { SCORE_NEXT, compositionFor } from '../balance.js';
 import longswordUrl from '../../Assets/weapon_longsword.png';
 import bowUrl from '../../Assets/weapon_bow.png';
 import arrowUrl from '../../Assets/weapon_arrow.png';
 import bowArrowUrl from '../../Assets/weapon_bow_arrow.png';
 import staffUrl from '../../Assets/weapon_staff.png';
 
-// Población por nivel 1, fuera de la sala inicial (pasos 4-5).
-const BASIC_COUNT = 4;
-const PURSUER_COUNT = 2;
-const SWORDSMAN_COUNT = 2;
-const TOXIC_COUNT = 2;
-const GUNNER_COUNT = 2;
-const MAGE_COUNT = 1;
+// Población y trampas por nivel: ver compositionFor en balance.js (paso 8).
 const SPAWN_MIN_DIST = 500;
 // Subida de nivel de jugador (decisión de usuario, en puntos; ver balance.js).
 const TREASURE_VALUE = 25;
-// Trampas por nivel 1 (decisión paso 7): 6 fijas + 3 temporizadas.
-const SPIKE_COUNT = 6;
-const TIMED_COUNT = 3;
+// Población y trampas: ver compositionFor en balance.js.
 const TRAP_MIN_DIST = 700;
 const EXIT_MIN_DIST = 200;
 const BONUSES = [
@@ -69,7 +61,7 @@ export class GameScene extends Phaser.Scene {
       seed: (Math.random() * 2 ** 31) | 0,
       cols: 30,
       rows: 22,
-      roomCount: 5 + this.level,
+      roomCount: compositionFor(this.level).rooms,
       minRoom: 4,
       maxRoom: 8,
     });
@@ -144,18 +136,20 @@ export class GameScene extends Phaser.Scene {
   }
 
   spawnEnemies(built) {
-    const options = built.rooms.slice(1);
+    const comp = compositionFor(this.level);
+    const rooms = built.rooms.slice(1);
+    if (rooms.length === 0) return;
     const placements = [
-      ...Array(BASIC_COUNT).fill('basic'),
-      ...Array(PURSUER_COUNT).fill('pursuer'),
-      ...Array(SWORDSMAN_COUNT).fill('swordsman'),
-      ...Array(TOXIC_COUNT).fill('toxic'),
-      ...Array(GUNNER_COUNT).fill('gunner'),
-      ...Array(MAGE_COUNT).fill('mage'),
+      ...Array(comp.basic).fill('basic'),
+      ...Array(comp.pursuer).fill('pursuer'),
+      ...Array(comp.swordsman).fill('swordsman'),
+      ...Array(comp.toxic).fill('toxic'),
+      ...Array(comp.gunner).fill('gunner'),
+      ...Array(comp.mage).fill('mage'),
     ];
+    // Varias presencias por sala: los conteos se cumplen siempre.
     for (const type of placements) {
-      if (options.length === 0) break;
-      const room = Phaser.Utils.Array.RemoveRandomElement(options);
+      const room = rooms[Math.floor(Math.random() * rooms.length)];
       const pos = this.roomPosition(room, built.spawn);
       if (!pos) continue;
       this.enemies.add(createEnemy(this, type, pos.x, pos.y));
@@ -177,6 +171,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   spawnTraps(built) {
+    const comp = compositionFor(this.level);
     const options = built.floor.filter(
       (c) =>
         Phaser.Math.Distance.Between(c.x, c.y, built.spawn.x, built.spawn.y) >= TRAP_MIN_DIST &&
@@ -186,11 +181,11 @@ export class GameScene extends Phaser.Scene {
       if (options.length === 0) return null;
       return Phaser.Utils.Array.RemoveRandomElement(options);
     };
-    for (let n = 0; n < SPIKE_COUNT; n += 1) {
+    for (let n = 0; n < comp.spikes; n += 1) {
       const c = takeCell();
       if (c) this.hazards.add(new SpikeTrap(this, c.x, c.y));
     }
-    for (let n = 0; n < TIMED_COUNT; n += 1) {
+    for (let n = 0; n < comp.timed; n += 1) {
       const c = takeCell();
       if (c) this.hazards.add(new TimedSpikes(this, c.x, c.y));
     }

@@ -12,6 +12,7 @@ export class Enemy extends Phaser.GameObjects.Triangle {
     this.hp = hp;
     this.score = score;
     this.dead = false;
+    this.attachments = [];
     this.knockVel = new Phaser.Math.Vector2(0, 0);
     this.knockUntil = 0;
   }
@@ -39,6 +40,7 @@ export class Enemy extends Phaser.GameObjects.Triangle {
     });
     if (this.hp <= 0) {
       this.dead = true;
+      for (const attachment of this.attachments) attachment.destroy?.();
       this.scene.onEnemyKilled(this);
       this.destroy();
     }

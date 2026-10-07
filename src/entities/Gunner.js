@@ -18,6 +18,9 @@ const FIRE_COOLDOWN = 2000;
 export class Gunner extends Enemy {
   constructor(scene, x, y) {
     super(scene, x, y, { hp: 3, score: 25, color: 0x44ccff, size: 30 });
+    // Arco del asset: apunta siempre al jugador (indicador de puntería).
+    this.bow = scene.add.image(x, y, 'weapon-bow').setScale(0.35);
+    this.attachments.push(this.bow);
     this.nextShot = 0;
     this.strafeDir = 1;
     this.strafeAt = 0;
@@ -33,6 +36,8 @@ export class Gunner extends Enemy {
     const toPlayer = new Phaser.Math.Vector2(p.x - this.x, p.y - this.y);
     const dist = toPlayer.length();
     toPlayer.normalize();
+    this.bow.setPosition(this.x, this.y);
+    this.bow.setRotation(Math.atan2(toPlayer.y, toPlayer.x) + Math.PI / 2);
     if (dist > APPROACH_ABOVE) {
       this.body.setVelocity(toPlayer.x * MOVE_SPEED, toPlayer.y * MOVE_SPEED);
     } else if (dist < RETREAT_BELOW) {

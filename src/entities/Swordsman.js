@@ -15,6 +15,7 @@ export class Swordsman extends BasicChicken {
   constructor(scene, x, y) {
     super(scene, x, y, { hp: 4, score: 30, color: 0xffdd22, size: 32 });
     this.sword = new OrbitSword(scene, this);
+    this.attachments.push(this.sword);
     this.swordState = 'wander';
     this.dashAt = 0;
     this.dashUntil = 0;

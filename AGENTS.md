@@ -27,6 +27,9 @@ modificar el proyecto.
   **Divergencia decidida por el usuario** (difiere del GDD, Objetivo, p. 2):
   la experiencia se eliminó como moneda; todo otorga puntos y el jugador sube
   de nivel cada 200 puntos (`src/balance.js`).
+  **Divergencia decidida por el usuario** (difiere del GDD, Mecánicas, p. 2):
+  la meta pasa de 5 a 10 niveles con dificultad progresiva (composición por
+  nivel en `compositionFor`) y el jefe Pollo Morado cierra en el nivel 10.
 - **Enemigos (NPCs):** triángulos; la clase se distingue por color y tamaño.
   Rojos básicos (contacto); Naranjas perseguidores (persiguen en su área, se cansan
   y duermen, retoman si el jugador se acerca); Amarillos espadachines (espada que
