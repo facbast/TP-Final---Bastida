@@ -6,6 +6,8 @@ import { generateDungeon } from '../dungeon/Dungeon.js';
 import { DungeonBuilder } from '../dungeon/DungeonBuilder.js';
 import { ExitPortal } from '../dungeon/ExitPortal.js';
 import { Treasure } from '../entities/Treasure.js';
+import { SpikeTrap } from '../entities/SpikeTrap.js';
+import { TimedSpikes } from '../entities/TimedSpikes.js';
 import longswordUrl from '../../Assets/weapon_longsword.png';
 import bowUrl from '../../Assets/weapon_bow.png';
 import arrowUrl from '../../Assets/weapon_arrow.png';
@@ -23,6 +25,11 @@ const SPAWN_MIN_DIST = 500;
 // Subida de nivel de jugador (decisión paso 6): 10 exp fijas por nivel.
 const EXP_NEXT = 10;
 const TREASURE_VALUE = 25;
+// Trampas por nivel 1 (decisión paso 7): 6 fijas + 3 temporizadas.
+const SPIKE_COUNT = 6;
+const TIMED_COUNT = 3;
+const TRAP_MIN_DIST = 700;
+const EXIT_MIN_DIST = 200;
 const BONUSES = [
   { label: '1 - Corazón máximo +1 (cura completa)' },
   { label: '2 - Velocidad +10%' },
@@ -86,9 +93,16 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.overlap(this.player, this.enemies, (player) => {
       player.takeHit(1);
     });
-    // Charcos de toxina: medio corazón por golpe (paso 5c).
-    this.physics.add.overlap(this.player, this.hazards, (player) => {
-      player.takeHit(1);
+    // Charcos y trampas: medio corazón por golpe (pasos 5c y 7).
+    // Las temporizadas solo dañan armadas.
+    this.physics.add.overlap(this.player, this.hazards, (player, hazard) => {
+      if (hazard.armed !== false) player.takeHit(1);
+    });
+    // Las trampas también dañan enemigos (otorgan puntos y exp igual).
+    this.physics.add.overlap(this.enemies, this.hazards, (enemy, hazard) => {
+      if (hazard.hurtsEnemies && hazard.armed !== false && !enemy.dead) {
+        enemy.takeDamage(1);
+      }
     });
     // Cofres: recolección automática al contacto.
     this.physics.add.overlap(this.player, this.pickups, (player, treasure) => {
@@ -112,6 +126,7 @@ export class GameScene extends Phaser.Scene {
     this.interactables.add(new ExitPortal(this, built.exit.x, built.exit.y));
     this.spawnEnemies(built);
     this.spawnTreasures(built);
+    this.spawnTraps(built);
 
     this.hud = new Hud(this, this.player);
     this.hud.refresh();
@@ -157,6 +172,26 @@ export class GameScene extends Phaser.Scene {
       }
     }
     return null;
+  }
+
+  spawnTraps(built) {
+    const options = built.floor.filter(
+      (c) =>
+        Phaser.Math.Distance.Between(c.x, c.y, built.spawn.x, built.spawn.y) >= TRAP_MIN_DIST &&
+        Phaser.Math.Distance.Between(c.x, c.y, built.exit.x, built.exit.y) >= EXIT_MIN_DIST,
+    );
+    const takeCell = () => {
+      if (options.length === 0) return null;
+      return Phaser.Utils.Array.RemoveRandomElement(options);
+    };
+    for (let n = 0; n < SPIKE_COUNT; n += 1) {
+      const c = takeCell();
+      if (c) this.hazards.add(new SpikeTrap(this, c.x, c.y));
+    }
+    for (let n = 0; n < TIMED_COUNT; n += 1) {
+      const c = takeCell();
+      if (c) this.hazards.add(new TimedSpikes(this, c.x, c.y));
+    }
   }
 
   onEnemyKilled(enemy) {
@@ -269,6 +304,9 @@ export class GameScene extends Phaser.Scene {
     this.player.update(time, delta);
     for (const enemy of this.enemies.getChildren()) {
       enemy.update?.(time, delta);
+    }
+    for (const hazard of this.hazards.getChildren()) {
+      hazard.update?.(time, delta);
     }
     this.updateCameraLookahead();
   }

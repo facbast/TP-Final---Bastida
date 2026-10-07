@@ -18,9 +18,12 @@ export class DungeonBuilder {
 
     const floor = s.add.graphics();
     floor.fillStyle(0x23232f, 1);
+    const floorCells = [];
     for (let y = 0; y < dungeon.rows; y += 1) {
       for (let x = 0; x < dungeon.cols; x += 1) {
-        if (dungeon.grid[y][x]) floor.fillRect(x * CELL, y * CELL, CELL, CELL);
+        if (!dungeon.grid[y][x]) continue;
+        floor.fillRect(x * CELL, y * CELL, CELL, CELL);
+        floorCells.push({ x: x * CELL + CELL / 2, y: y * CELL + CELL / 2 });
       }
     }
 
@@ -59,6 +62,7 @@ export class DungeonBuilder {
       walls,
       spawn: toWorld(dungeon.spawnCell),
       exit: toWorld(dungeon.exitCell),
+      floor: floorCells,
       rooms: dungeon.rooms.map((r) => ({
         x: r.x * CELL,
         y: r.y * CELL,
