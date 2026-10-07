@@ -20,6 +20,21 @@ export class Hud {
     this.scoreText = scene.add
       .text(16, 88, '', { fontFamily: 'monospace', fontSize: '16px', color: '#ffd75e' })
       .setScrollFactor(0);
+    // Barra del jefe (paso 10): solo visible durante su pelea.
+    this.bossBg = scene.add.rectangle(640, 26, 404, 22, 0x000000, 0.6).setScrollFactor(0);
+    this.bossFill = scene.add
+      .rectangle(442, 26, 396, 14, 0x9933cc)
+      .setOrigin(0, 0.5)
+      .setScrollFactor(0);
+    this.bossLabel = scene.add
+      .text(640, 54, 'POLLO MORADO', {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: '#d9a0ff',
+      })
+      .setOrigin(0.5, 0)
+      .setScrollFactor(0);
+    this.setBossVisible(false);
     player.health.onChanged(() => this.refresh());
   }
 
@@ -61,5 +76,22 @@ export class Hud {
     this.livesText.setText(`Vidas: ${this.player.lives}`);
     this.levelText.setText(`Nivel: ${this.scene.level ?? 1} PJ:${this.scene.run?.playerLevel ?? 1}`);
     this.scoreText.setText(`Puntos: ${this.scene.run?.score ?? 0}/${SCORE_NEXT}`);
+  }
+
+  setBossVisible(visible) {
+    this.bossBg.setVisible(visible);
+    this.bossFill.setVisible(visible);
+    this.bossLabel.setVisible(visible);
+  }
+
+  refreshBoss() {
+    const boss = this.scene.boss;
+    if (!boss || !boss.active || boss.dead) {
+      this.setBossVisible(false);
+      return;
+    }
+    this.setBossVisible(true);
+    const frac = Phaser.Math.Clamp(boss.hp / boss.maxHp, 0, 1);
+    this.bossFill.displayWidth = 396 * frac;
   }
 }

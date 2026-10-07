@@ -16,11 +16,19 @@ const STAFF_COOLDOWN = 1500;
 export class Mage extends Enemy {
   constructor(scene, x, y) {
     super(scene, x, y, { hp: 5, score: 40, color: 0x3388ff, size: 34 });
+    // Aura helada visible: círculo del radio de ralentización.
+    this.aura = scene.add.circle(x, y, SLOW_RADIUS, 0x66bbff, 0.1);
+    this.auraRing = scene.add.graphics();
+    this.attachments.push(this.aura, this.auraRing);
     this.nextStaff = 0;
   }
 
   update(time) {
     if (this.dead) return;
+    this.aura.setPosition(this.x, this.y);
+    this.auraRing.clear();
+    this.auraRing.lineStyle(2, 0x66bbff, 0.35);
+    this.auraRing.strokeCircle(this.x, this.y, SLOW_RADIUS);
     if (this.isStaggered(time)) {
       this.body.setVelocity(this.knockVel.x, this.knockVel.y);
       return;

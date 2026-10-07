@@ -15,6 +15,8 @@ export class Enemy extends Phaser.GameObjects.Triangle {
     this.attachments = [];
     this.knockVel = new Phaser.Math.Vector2(0, 0);
     this.knockUntil = 0;
+    // Daño por contacto en mitades (base: medio corazón).
+    this.contactDamage = 1;
   }
 
   isStaggered(time) {
@@ -41,8 +43,12 @@ export class Enemy extends Phaser.GameObjects.Triangle {
     if (this.hp <= 0) {
       this.dead = true;
       for (const attachment of this.attachments) attachment.destroy?.();
+      this.onDeath();
       this.scene.onEnemyKilled(this);
       this.destroy();
     }
   }
+
+  // Gancho de muerte (el jefe lo usa para plantar el portal).
+  onDeath() {}
 }

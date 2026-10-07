@@ -43,12 +43,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(data = {}) {
+    this.cameras.main.fadeIn(300, 0, 0, 0);
     // Estado de la partida que persiste entre niveles (GDD, Persistencia, p. 2).
     const run = data.run ?? {
       level: 1,
       halves: 6,
       lives: 3,
       score: 0,
+      totalScore: 0,
       playerLevel: 1,
     };
     this.run = run;
@@ -83,9 +85,9 @@ export class GameScene extends Phaser.Scene {
       dashCdMul: run.dashCdMul,
     });
     this.physics.add.collider(this.player, this.walls);
-    // Contacto base: medio corazón por golpe (decisión paso 2).
-    this.physics.add.overlap(this.player, this.enemies, (player) => {
-      player.takeHit(1);
+    // Contacto: daño propio de cada enemigo (base: medio corazón).
+    this.physics.add.overlap(this.player, this.enemies, (player, enemy) => {
+      player.takeHit(enemy.contactDamage ?? 1);
     });
     // Charcos y trampas: medio corazón por golpe (pasos 5c y 7).
     // Las temporizadas solo dañan armadas.
@@ -117,7 +119,14 @@ export class GameScene extends Phaser.Scene {
       bullet.destroy();
     });
 
-    this.interactables.add(new ExitPortal(this, built.exit.x, built.exit.y));
+    // Nivel 10: en lugar del portal sale el jefe en la sala de salida.
+    this.boss = null;
+    if (this.level >= 10) {
+      this.boss = createEnemy(this, 'boss', built.exit.x, built.exit.y);
+      this.enemies.add(this.boss);
+    } else {
+      this.interactables.add(new ExitPortal(this, built.exit.x, built.exit.y));
+    }
     this.spawnEnemies(built);
     this.spawnTreasures(built);
     this.spawnTraps(built);
@@ -193,8 +202,50 @@ export class GameScene extends Phaser.Scene {
 
   onEnemyKilled(enemy) {
     this.run.score += enemy.score;
+    this.run.totalScore += enemy.score;
     this.hud?.refresh();
     this.checkLevelUp();
+  }
+
+  // El jefe deja el portal de victoria donde muere (decisión paso 9).
+  onBossDefeated(x, y) {
+    this.boss = null;
+    this.interactables.add(new ExitPortal(this, x, y, { toVictory: true }));
+  }
+
+  onVictory() {
+    if (this.gameEnded) return;
+    this.gameEnded = true;
+    this.player.body.setVelocity(0, 0);
+    const cam = this.cameras.main;
+    const cx = cam.width / 2;
+    const cy = cam.height / 2;
+    this.add.rectangle(cx, cy, cam.width, cam.height, 0x000000, 0.7).setScrollFactor(0);
+    this.add
+      .text(cx, cy - 60, '¡VICTORIA!', {
+        fontFamily: 'monospace',
+        fontSize: '56px',
+        color: '#ffd75e',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0);
+    this.add
+      .text(cx, cy + 10, `Puntos totales: ${this.run.totalScore}  Nivel PJ: ${this.run.playerLevel}`, {
+        fontFamily: 'monospace',
+        fontSize: '22px',
+        color: '#ffffff',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0);
+    this.add
+      .text(cx, cy + 60, 'Pulsa R para jugar de nuevo', {
+        fontFamily: 'monospace',
+        fontSize: '20px',
+        color: '#ffffff',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0);
+    this.input.keyboard.on('keydown-R', () => this.scene.restart());
   }
 
   spawnTreasures(built) {
@@ -207,6 +258,7 @@ export class GameScene extends Phaser.Scene {
 
   collectTreasure(treasure) {
     this.run.score += treasure.value;
+    this.run.totalScore += treasure.value;
     const popup = this.add
       .text(treasure.x, treasure.y - 24, `+${treasure.value}`, {
         fontFamily: 'monospace',
@@ -280,18 +332,24 @@ export class GameScene extends Phaser.Scene {
   }
 
   nextLevel() {
-    if (this.gameEnded) return;
-    this.scene.restart({
-      run: {
-        level: this.level + 1,
-        halves: this.player.health.halves,
-        lives: this.player.lives,
-        score: this.run.score,
-        playerLevel: this.run.playerLevel,
-        maxHearts: this.player.health.maxHearts,
-        speedMul: this.player.speedMul,
-        dashCdMul: this.player.dashCdMul,
-      },
+    if (this.gameEnded || this.transitioning) return;
+    this.transitioning = true;
+    const cam = this.cameras.main;
+    cam.fadeOut(250, 0, 0, 0);
+    cam.once('camerafadeoutcomplete', () => {
+      this.scene.restart({
+        run: {
+          level: this.level + 1,
+          halves: this.player.health.halves,
+          lives: this.player.lives,
+          score: this.run.score,
+          totalScore: this.run.totalScore,
+          playerLevel: this.run.playerLevel,
+          maxHearts: this.player.health.maxHearts,
+          speedMul: this.player.speedMul,
+          dashCdMul: this.player.dashCdMul,
+        },
+      });
     });
   }
 
@@ -304,6 +362,7 @@ export class GameScene extends Phaser.Scene {
     for (const hazard of this.hazards.getChildren()) {
       hazard.update?.(time, delta);
     }
+    this.hud.refreshBoss();
     this.updateCameraLookahead();
   }
 
@@ -317,6 +376,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   onGameOver() {
+    if (this.gameEnded) return;
     this.gameEnded = true;
     this.player.body.setVelocity(0, 0);
     const cam = this.cameras.main;
@@ -332,7 +392,15 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScrollFactor(0);
     this.add
-      .text(cx, cy + 40, 'Pulsa R para reiniciar', {
+      .text(cx, cy + 10, `Puntos totales: ${this.run.totalScore}`, {
+        fontFamily: 'monospace',
+        fontSize: '22px',
+        color: '#ffffff',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0);
+    this.add
+      .text(cx, cy + 60, 'Pulsa R para reiniciar', {
         fontFamily: 'monospace',
         fontSize: '20px',
         color: '#ffffff',
