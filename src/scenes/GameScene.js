@@ -11,12 +11,13 @@ import arrowUrl from '../../Assets/weapon_arrow.png';
 import bowArrowUrl from '../../Assets/weapon_bow_arrow.png';
 import staffUrl from '../../Assets/weapon_staff.png';
 
-// Celestes por nivel 1, fuera de la sala inicial (paso 5d).
+// Población por nivel 1, fuera de la sala inicial (pasos 4-5).
 const BASIC_COUNT = 4;
 const PURSUER_COUNT = 2;
 const SWORDSMAN_COUNT = 2;
 const TOXIC_COUNT = 2;
 const GUNNER_COUNT = 2;
+const MAGE_COUNT = 1;
 const SPAWN_MIN_DIST = 500;
 
 export class GameScene extends Phaser.Scene {
@@ -107,6 +108,7 @@ export class GameScene extends Phaser.Scene {
       ...Array(SWORDSMAN_COUNT).fill('swordsman'),
       ...Array(TOXIC_COUNT).fill('toxic'),
       ...Array(GUNNER_COUNT).fill('gunner'),
+      ...Array(MAGE_COUNT).fill('mage'),
     ];
     for (const type of placements) {
       if (options.length === 0) break;

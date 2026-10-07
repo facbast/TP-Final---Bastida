@@ -29,6 +29,8 @@ export class Player extends Phaser.GameObjects.Rectangle {
     this.moveDir = new Phaser.Math.Vector2(0, 0);
     this.health = new Health(3);
     this.lives = snapshot.lives ?? 3;
+    this.slowFactor = 1;
+    this.slowedUntil = 0;
     if (snapshot.halves !== undefined) {
       this.health.halves = Phaser.Math.Clamp(
         snapshot.halves,
@@ -56,6 +58,17 @@ export class Player extends Phaser.GameObjects.Rectangle {
 
   isInvulnerable(time) {
     return time < this.invulnerableUntil;
+  }
+
+  isSlowed(time) {
+    return time < this.slowedUntil;
+  }
+
+  // Ralentización con refresco: factor de velocidad hasta el vencimiento.
+  applySlow(factor, duration) {
+    const time = this.scene.time.now;
+    this.slowFactor = factor;
+    this.slowedUntil = Math.max(this.slowedUntil, time + duration);
   }
 
   update(time) {
@@ -90,9 +103,11 @@ export class Player extends Phaser.GameObjects.Rectangle {
       }
     }
     const move = this.isDashing(time) ? this.dashDir : dir;
-    const speed = this.isDashing(time) ? DASH_SPEED : SPEED;
+    const slowed = this.isSlowed(time) ? this.slowFactor : 1;
+    const speed = (this.isDashing(time) ? DASH_SPEED : SPEED) * slowed;
     this.body.setVelocity(move.x * speed, move.y * speed);
     this.setAlpha(this.isInvulnerable(time) ? 0.5 : 1);
+    this.setFillStyle(this.isSlowed(time) ? 0x66bbff : 0x0000ff);
 
     if (Phaser.Input.Keyboard.JustDown(attack)) {
       this.weapon.attack(this, this.facing.clone(), time);
