@@ -8,13 +8,8 @@ export class Hud {
     this.scene = scene;
     this.player = player;
     this.makeHeartTextures();
-    this.heartImgs = [0, 1, 2].map(
-      (i) =>
-        scene.add
-          .image(28 + i * 30, 26, 'heart-full')
-          .setScrollFactor(0)
-          .setOrigin(0.5),
-    );
+    this.renderedHearts = 0;
+    this.heartImgs = [];
     this.livesText = scene.add
       .text(16, 44, '', { fontFamily: 'monospace', fontSize: '16px', color: '#ffffff' })
       .setScrollFactor(0);
@@ -45,11 +40,25 @@ export class Hud {
   }
 
   refresh() {
+    const count = this.player.health.maxHearts;
+    if (count !== this.renderedHearts) {
+      for (const img of this.heartImgs) img.destroy();
+      this.heartImgs = [];
+      for (let i = 0; i < count; i += 1) {
+        this.heartImgs.push(
+          this.scene.add
+            .image(28 + i * 30, 26, 'heart-full')
+            .setScrollFactor(0)
+            .setOrigin(0.5),
+        );
+      }
+      this.renderedHearts = count;
+    }
     for (let i = 0; i < this.heartImgs.length; i += 1) {
       this.heartImgs[i].setTexture(`heart-${this.player.health.stateOf(i)}`);
     }
     this.livesText.setText(`Vidas: ${this.player.lives}`);
-    this.levelText.setText(`Nivel: ${this.scene.level ?? 1}`);
+    this.levelText.setText(`Nivel: ${this.scene.level ?? 1} PJ:${this.scene.run?.playerLevel ?? 1}`);
     this.scoreText.setText(
       `Puntos: ${this.scene.run?.score ?? 0} Exp: ${this.scene.run?.exp ?? 0}`,
     );

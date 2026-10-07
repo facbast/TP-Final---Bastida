@@ -27,8 +27,12 @@ export class Player extends Phaser.GameObjects.Rectangle {
     this.facing = new Phaser.Math.Vector2(0, 1);
     this.dashDir = this.facing.clone();
     this.moveDir = new Phaser.Math.Vector2(0, 0);
-    this.health = new Health(3);
+    this.health = new Health(snapshot.maxHearts ?? 3);
     this.lives = snapshot.lives ?? 3;
+    this.speedMul = snapshot.speedMul ?? 1;
+    this.dashCdMul = snapshot.dashCdMul ?? 1;
+    this.moveSpeed = SPEED * this.speedMul;
+    this.dashCooldown = DASH_COOLDOWN * this.dashCdMul;
     this.slowFactor = 1;
     this.slowedUntil = 0;
     if (snapshot.halves !== undefined) {
@@ -90,7 +94,7 @@ export class Player extends Phaser.GameObjects.Rectangle {
       this.dashDir.copy(this.facing);
       this.dashUntil = time + DASH_MIN_TIME;
       this.dashMaxUntil = time + DASH_MAX_TIME;
-      this.dashReadyAt = time + DASH_COOLDOWN;
+      this.dashReadyAt = time + this.dashCooldown;
       this.invulnerableUntil = this.dashUntil;
     }
     if (this.isDashing(time)) {
@@ -104,7 +108,7 @@ export class Player extends Phaser.GameObjects.Rectangle {
     }
     const move = this.isDashing(time) ? this.dashDir : dir;
     const slowed = this.isSlowed(time) ? this.slowFactor : 1;
-    const speed = (this.isDashing(time) ? DASH_SPEED : SPEED) * slowed;
+    const speed = (this.isDashing(time) ? DASH_SPEED : this.moveSpeed) * slowed;
     this.body.setVelocity(move.x * speed, move.y * speed);
     this.setAlpha(this.isInvulnerable(time) ? 0.5 : 1);
     this.setFillStyle(this.isSlowed(time) ? 0x66bbff : 0x0000ff);
@@ -154,5 +158,21 @@ export class Player extends Phaser.GameObjects.Rectangle {
     this.health.full();
     this.invulnerableUntil = time + RESPAWN_IFRAMES;
     this.scene.hud?.refresh();
+  }
+
+  // Bonificaciones de subida de nivel (decisión paso 6).
+  addMaxHeart() {
+    this.health.raiseMax(1);
+    this.health.full();
+  }
+
+  boostSpeed() {
+    this.speedMul *= 1.1;
+    this.moveSpeed = SPEED * this.speedMul;
+  }
+
+  reduceDashCooldown() {
+    this.dashCdMul *= 0.85;
+    this.dashCooldown = DASH_COOLDOWN * this.dashCdMul;
   }
 }

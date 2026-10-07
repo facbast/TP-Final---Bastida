@@ -36,6 +36,13 @@ export class Health {
     this.emit();
   }
 
+  raiseMax(hearts) {
+    this.maxHearts += hearts;
+    this.maxHalves += hearts * 2;
+    this.halves = Math.min(this.halves, this.maxHalves);
+    this.emit();
+  }
+
   isEmpty() {
     return this.halves <= 0;
   }

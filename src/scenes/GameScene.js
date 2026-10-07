@@ -5,6 +5,7 @@ import { createEnemy } from '../entities/EnemyFactory.js';
 import { generateDungeon } from '../dungeon/Dungeon.js';
 import { DungeonBuilder } from '../dungeon/DungeonBuilder.js';
 import { ExitPortal } from '../dungeon/ExitPortal.js';
+import { Treasure } from '../entities/Treasure.js';
 import longswordUrl from '../../Assets/weapon_longsword.png';
 import bowUrl from '../../Assets/weapon_bow.png';
 import arrowUrl from '../../Assets/weapon_arrow.png';
@@ -19,6 +20,14 @@ const TOXIC_COUNT = 2;
 const GUNNER_COUNT = 2;
 const MAGE_COUNT = 1;
 const SPAWN_MIN_DIST = 500;
+// Subida de nivel de jugador (decisión paso 6): 10 exp fijas por nivel.
+const EXP_NEXT = 10;
+const TREASURE_VALUE = 25;
+const BONUSES = [
+  { label: '1 - Corazón máximo +1 (cura completa)' },
+  { label: '2 - Velocidad +10%' },
+  { label: '3 - Dash recarga 15% más rápido' },
+];
 
 export class GameScene extends Phaser.Scene {
   constructor() {
@@ -36,7 +45,14 @@ export class GameScene extends Phaser.Scene {
 
   create(data = {}) {
     // Estado de la partida que persiste entre niveles (GDD, Persistencia, p. 2).
-    const run = data.run ?? { level: 1, halves: 6, lives: 3, score: 0, exp: 0 };
+    const run = data.run ?? {
+      level: 1,
+      halves: 6,
+      lives: 3,
+      score: 0,
+      exp: 0,
+      playerLevel: 1,
+    };
     this.run = run;
     this.level = run.level;
     // Pixel nítido para el pixel-art de armas.
@@ -58,6 +74,7 @@ export class GameScene extends Phaser.Scene {
     this.enemies = this.physics.add.group();
     this.enemyBullets = this.physics.add.group();
     this.hazards = this.physics.add.staticGroup();
+    this.pickups = this.physics.add.staticGroup();
     this.interactables = this.add.group();
     this.walls = built.walls;
     this.player = new Player(this, built.spawn.x, built.spawn.y, {
@@ -72,6 +89,10 @@ export class GameScene extends Phaser.Scene {
     // Charcos de toxina: medio corazón por golpe (paso 5c).
     this.physics.add.overlap(this.player, this.hazards, (player) => {
       player.takeHit(1);
+    });
+    // Cofres: recolección automática al contacto.
+    this.physics.add.overlap(this.player, this.pickups, (player, treasure) => {
+      this.collectTreasure(treasure);
     });
     // Balas enemigas: dañan al jugador salvo reflejadas (paso 5d).
     this.physics.add.overlap(this.player, this.enemyBullets, (player, bullet) => {
@@ -90,10 +111,15 @@ export class GameScene extends Phaser.Scene {
 
     this.interactables.add(new ExitPortal(this, built.exit.x, built.exit.y));
     this.spawnEnemies(built);
+    this.spawnTreasures(built);
 
     this.hud = new Hud(this, this.player);
     this.hud.refresh();
     this.gameEnded = false;
+    this.levelUpOpen = false;
+    this.input.keyboard.on('keydown-ONE', () => this.chooseBonus(0));
+    this.input.keyboard.on('keydown-TWO', () => this.chooseBonus(1));
+    this.input.keyboard.on('keydown-THREE', () => this.chooseBonus(2));
 
     const cam = this.cameras.main;
     cam.setBounds(0, 0, built.width, built.height);
@@ -137,6 +163,88 @@ export class GameScene extends Phaser.Scene {
     this.run.score += enemy.score;
     this.run.exp += enemy.exp;
     this.hud?.refresh();
+    this.checkLevelUp();
+  }
+
+  spawnTreasures(built) {
+    for (const room of built.rooms.slice(1)) {
+      const x = room.x + 120 + Math.random() * (room.w - 240);
+      const y = room.y + 120 + Math.random() * (room.h - 240);
+      new Treasure(this, x, y, TREASURE_VALUE);
+    }
+  }
+
+  collectTreasure(treasure) {
+    this.run.score += treasure.value;
+    const popup = this.add
+      .text(treasure.x, treasure.y - 24, `+${treasure.value}`, {
+        fontFamily: 'monospace',
+        fontSize: '20px',
+        color: '#ffd75e',
+      })
+      .setOrigin(0.5);
+    this.tweens.add({
+      targets: popup,
+      y: popup.y - 32,
+      alpha: 0,
+      duration: 800,
+      onComplete: () => popup.destroy(),
+    });
+    treasure.destroy();
+    this.hud?.refresh();
+  }
+
+  checkLevelUp() {
+    if (this.levelUpOpen || this.gameEnded) return;
+    if (this.run.exp < EXP_NEXT) return;
+    this.run.exp -= EXP_NEXT;
+    this.run.playerLevel += 1;
+    this.player.lives += 1;
+    this.openBonusChoice();
+  }
+
+  openBonusChoice() {
+    this.levelUpOpen = true;
+    this.physics.pause();
+    const cam = this.cameras.main;
+    const cx = cam.width / 2;
+    const cy = cam.height / 2;
+    this.bonusUI = this.add.container(0, 0);
+    const bg = this.add.rectangle(cx, cy, cam.width, cam.height, 0x000000, 0.7);
+    const title = this.add
+      .text(cx, cy - 80, `¡Nivel ${this.run.playerLevel}! Elige bonificación`, {
+        fontFamily: 'monospace',
+        fontSize: '24px',
+        color: '#ffd75e',
+      })
+      .setOrigin(0.5);
+    this.bonusUI.add([bg, title]);
+    BONUSES.forEach((bonus, i) => {
+      this.bonusUI.add(
+        this.add
+          .text(cx, cy + i * 36, bonus.label, {
+            fontFamily: 'monospace',
+            fontSize: '20px',
+            color: '#ffffff',
+          })
+          .setOrigin(0.5),
+      );
+    });
+    this.bonusUI.setScrollFactor(0);
+    this.hud?.refresh();
+  }
+
+  chooseBonus(i) {
+    if (!this.levelUpOpen || i < 0 || i > 2) return;
+    if (i === 0) this.player.addMaxHeart();
+    else if (i === 1) this.player.boostSpeed();
+    else this.player.reduceDashCooldown();
+    this.bonusUI?.destroy(true);
+    this.bonusUI = null;
+    this.levelUpOpen = false;
+    this.physics.resume();
+    this.hud?.refresh();
+    this.checkLevelUp();
   }
 
   nextLevel() {
@@ -148,12 +256,16 @@ export class GameScene extends Phaser.Scene {
         lives: this.player.lives,
         score: this.run.score,
         exp: this.run.exp,
+        playerLevel: this.run.playerLevel,
+        maxHearts: this.player.health.maxHearts,
+        speedMul: this.player.speedMul,
+        dashCdMul: this.player.dashCdMul,
       },
     });
   }
 
   update(time, delta) {
-    if (this.gameEnded) return;
+    if (this.gameEnded || this.levelUpOpen) return;
     this.player.update(time, delta);
     for (const enemy of this.enemies.getChildren()) {
       enemy.update?.(time, delta);
