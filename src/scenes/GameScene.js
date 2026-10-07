@@ -144,8 +144,8 @@ export class GameScene extends Phaser.Scene {
         level: this.level + 1,
         halves: this.player.health.halves,
         lives: this.player.lives,
-        score: 0,
-        exp: 0,
+        score: this.run.score,
+        exp: this.run.exp,
       },
     });
   }
