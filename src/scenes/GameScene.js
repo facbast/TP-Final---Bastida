@@ -11,11 +11,12 @@ import arrowUrl from '../../Assets/weapon_arrow.png';
 import bowArrowUrl from '../../Assets/weapon_bow_arrow.png';
 import staffUrl from '../../Assets/weapon_staff.png';
 
-// Rojos, naranjas, amarillos y verdes por nivel 1, fuera de la sala inicial.
+// Celestes por nivel 1, fuera de la sala inicial (paso 5d).
 const BASIC_COUNT = 4;
 const PURSUER_COUNT = 2;
 const SWORDSMAN_COUNT = 2;
 const TOXIC_COUNT = 2;
+const GUNNER_COUNT = 2;
 const SPAWN_MIN_DIST = 500;
 
 export class GameScene extends Phaser.Scene {
@@ -51,9 +52,10 @@ export class GameScene extends Phaser.Scene {
     });
     const built = new DungeonBuilder(this).build(dungeon);
 
-    // Grupos de dominio: enemigos (pasos 4-5), interactuables (tesoros paso 6),
-    // peligros de zona (charcos) y muros.
+    // Grupos de dominio: enemigos (pasos 4-5), balas enemigas, interactuables
+    // (tesoros paso 6), peligros de zona (charcos) y muros.
     this.enemies = this.physics.add.group();
+    this.enemyBullets = this.physics.add.group();
     this.hazards = this.physics.add.staticGroup();
     this.interactables = this.add.group();
     this.walls = built.walls;
@@ -69,6 +71,20 @@ export class GameScene extends Phaser.Scene {
     // Charcos de toxina: medio corazón por golpe (paso 5c).
     this.physics.add.overlap(this.player, this.hazards, (player) => {
       player.takeHit(1);
+    });
+    // Balas enemigas: dañan al jugador salvo reflejadas (paso 5d).
+    this.physics.add.overlap(this.player, this.enemyBullets, (player, bullet) => {
+      if (!bullet.reflected) player.takeHit(1);
+    });
+    // Balas reflejadas: dañan enemigos (paso 5d).
+    this.physics.add.overlap(this.enemyBullets, this.enemies, (bullet, enemy) => {
+      if (bullet.reflected && !enemy.dead) {
+        enemy.takeDamage?.(1);
+        if (enemy.active) enemy.applyKnockback?.(bullet.x, bullet.y);
+      }
+    });
+    this.physics.add.collider(this.enemyBullets, this.walls, (bullet) => {
+      bullet.destroy();
     });
 
     this.interactables.add(new ExitPortal(this, built.exit.x, built.exit.y));
@@ -90,6 +106,7 @@ export class GameScene extends Phaser.Scene {
       ...Array(PURSUER_COUNT).fill('pursuer'),
       ...Array(SWORDSMAN_COUNT).fill('swordsman'),
       ...Array(TOXIC_COUNT).fill('toxic'),
+      ...Array(GUNNER_COUNT).fill('gunner'),
     ];
     for (const type of placements) {
       if (options.length === 0) break;

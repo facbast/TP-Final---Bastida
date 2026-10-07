@@ -32,6 +32,12 @@ export class MeleeWeapon extends Weapon {
         if (enemy.active) enemy.applyKnockback?.(attacker.x, attacker.y);
       }
     });
+    // El barrido devuelve las balas enemigas en dirección opuesta.
+    if (s.enemyBullets) {
+      s.physics.add.overlap(zone, s.enemyBullets, (z, bullet) => {
+        bullet.reflect?.();
+      });
+    }
 
     const arc = s.add.graphics();
     const blade = s.add.image(attacker.x, attacker.y, 'weapon-longsword').setScale(0.55);
@@ -41,6 +47,17 @@ export class MeleeWeapon extends Weapon {
       arc.slice(attacker.x, attacker.y, ARC_RADIUS, baseAngle - SWEEP, baseAngle + SWEEP, false);
       arc.fillPath();
     };
+    const placeBlade = (t) => {
+      const a = baseAngle - SWEEP + t * 2 * SWEEP;
+      blade.setPosition(
+        attacker.x + Math.cos(a) * BLADE_DIST,
+        attacker.y + Math.sin(a) * BLADE_DIST,
+      );
+      blade.setRotation(a + Math.PI / 2);
+    };
+    // Posición inicial inmediata: evita un cuadro de la hoja sobre el jugador.
+    drawArc();
+    placeBlade(0);
 
     const swing = { t: 0 };
     s.tweens.add({
@@ -51,12 +68,7 @@ export class MeleeWeapon extends Weapon {
         // El barrido sigue al jugador (ya no se queda atascado en dash).
         zone.body.reset(attacker.x, attacker.y);
         drawArc();
-        const a = baseAngle - SWEEP + swing.t * 2 * SWEEP;
-        blade.setPosition(
-          attacker.x + Math.cos(a) * BLADE_DIST,
-          attacker.y + Math.sin(a) * BLADE_DIST,
-        );
-        blade.setRotation(a + Math.PI / 2);
+        placeBlade(swing.t);
       },
       onComplete: () => {
         zone.destroy();
