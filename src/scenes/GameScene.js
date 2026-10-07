@@ -86,6 +86,9 @@ export class GameScene extends Phaser.Scene {
     this.player = new Player(this, built.spawn.x, built.spawn.y, {
       halves: run.halves,
       lives: run.lives,
+      maxHearts: run.maxHearts,
+      speedMul: run.speedMul,
+      dashCdMul: run.dashCdMul,
     });
     this.physics.add.collider(this.player, this.walls);
     // Contacto base: medio corazón por golpe (decisión paso 2).
