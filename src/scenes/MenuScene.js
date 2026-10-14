@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { getTopScore } from '../storage.js';
 
 // Pantalla de título: nombre, controles e inicio (paso 10).
 export class MenuScene extends Phaser.Scene {
@@ -44,6 +45,16 @@ export class MenuScene extends Phaser.Scene {
         color: '#33ff88',
       })
       .setOrigin(0.5);
+    const top = getTopScore();
+    if (top > 0) {
+      this.add
+        .text(cx, 566, `Récord: ${top} pts`, {
+          fontFamily: 'monospace',
+          fontSize: '20px',
+          color: '#ffd75e',
+        })
+        .setOrigin(0.5);
+    }
     this.tweens.add({
       targets: start,
       alpha: 0.35,

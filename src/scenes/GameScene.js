@@ -9,6 +9,7 @@ import { Treasure } from '../entities/Treasure.js';
 import { SpikeTrap } from '../entities/SpikeTrap.js';
 import { TimedSpikes } from '../entities/TimedSpikes.js';
 import { SCORE_NEXT, compositionFor } from '../balance.js';
+import { getTopScore, saveTopScore } from '../storage.js';
 import longswordUrl from '../../Assets/weapon_longsword.png';
 import bowUrl from '../../Assets/weapon_bow.png';
 import arrowUrl from '../../Assets/weapon_arrow.png';
@@ -214,24 +215,27 @@ export class GameScene extends Phaser.Scene {
     this.interactables.add(new ExitPortal(this, x, y, { toVictory: true }));
   }
 
-  onVictory() {
-    if (this.gameEnded) return;
+  // Registra el puntaje final, avisa si es récord y vuelve al título.
+  // Decisión de usuario (no es regla del GDD).
+  finishRun(title, titleColor, extraLine) {
     this.gameEnded = true;
     this.player.body.setVelocity(0, 0);
+    const record = saveTopScore(this.run.totalScore);
+    const top = getTopScore();
     const cam = this.cameras.main;
     const cx = cam.width / 2;
     const cy = cam.height / 2;
     this.add.rectangle(cx, cy, cam.width, cam.height, 0x000000, 0.7).setScrollFactor(0);
     this.add
-      .text(cx, cy - 60, '¡VICTORIA!', {
+      .text(cx, cy - 60, title, {
         fontFamily: 'monospace',
         fontSize: '56px',
-        color: '#ffd75e',
+        color: titleColor,
       })
       .setOrigin(0.5)
       .setScrollFactor(0);
     this.add
-      .text(cx, cy + 10, `Puntos totales: ${this.run.totalScore}  Nivel PJ: ${this.run.playerLevel}`, {
+      .text(cx, cy + 10, extraLine, {
         fontFamily: 'monospace',
         fontSize: '22px',
         color: '#ffffff',
@@ -239,14 +243,31 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScrollFactor(0);
     this.add
-      .text(cx, cy + 60, 'Pulsa R para jugar de nuevo', {
+      .text(cx, cy + 48, record ? '¡Nuevo récord!' : `Récord: ${top} pts`, {
+        fontFamily: 'monospace',
+        fontSize: '22px',
+        color: '#ffd75e',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0);
+    this.add
+      .text(cx, cy + 96, 'Pulsa R para volver al título', {
         fontFamily: 'monospace',
         fontSize: '20px',
         color: '#ffffff',
       })
       .setOrigin(0.5)
       .setScrollFactor(0);
-    this.input.keyboard.on('keydown-R', () => this.scene.restart());
+    this.input.keyboard.on('keydown-R', () => this.scene.start('Menu'));
+  }
+
+  onVictory() {
+    if (this.gameEnded) return;
+    this.finishRun(
+      '¡VICTORIA!',
+      '#ffd75e',
+      `Puntos totales: ${this.run.totalScore}  Nivel PJ: ${this.run.playerLevel}`,
+    );
   }
 
   spawnTreasures(built) {
@@ -378,36 +399,6 @@ export class GameScene extends Phaser.Scene {
 
   onGameOver() {
     if (this.gameEnded) return;
-    this.gameEnded = true;
-    this.player.body.setVelocity(0, 0);
-    const cam = this.cameras.main;
-    const cx = cam.width / 2;
-    const cy = cam.height / 2;
-    this.add.rectangle(cx, cy, cam.width, cam.height, 0x000000, 0.7).setScrollFactor(0);
-    this.add
-      .text(cx, cy - 20, 'GAME OVER', {
-        fontFamily: 'monospace',
-        fontSize: '48px',
-        color: '#ff3355',
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0);
-    this.add
-      .text(cx, cy + 10, `Puntos totales: ${this.run.totalScore}`, {
-        fontFamily: 'monospace',
-        fontSize: '22px',
-        color: '#ffffff',
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0);
-    this.add
-      .text(cx, cy + 60, 'Pulsa R para reiniciar', {
-        fontFamily: 'monospace',
-        fontSize: '20px',
-        color: '#ffffff',
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0);
-    this.input.keyboard.on('keydown-R', () => this.scene.restart());
+    this.finishRun('GAME OVER', '#ff3355', `Puntos totales: ${this.run.totalScore}`);
   }
 }
