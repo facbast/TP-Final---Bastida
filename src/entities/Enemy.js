@@ -33,7 +33,8 @@ export class Enemy extends Phaser.GameObjects.Triangle {
     this.body.setVelocity(this.knockVel.x, this.knockVel.y);
   }
 
-  takeDamage(amount = 1) {
+  // award=false: muertes que no otorgan puntos (trampas).
+  takeDamage(amount = 1, award = true) {
     if (this.dead) return;
     this.hp -= amount;
     this.setFillStyle(0xffffff);
@@ -44,8 +45,8 @@ export class Enemy extends Phaser.GameObjects.Triangle {
       this.dead = true;
       for (const attachment of this.attachments) attachment.destroy?.();
       this.onDeath();
-      this.scene.onEnemyKilled(this);
-      this.destroy();
+      if (award) this.scene.onEnemyKilled(this);
+      else this.destroy();
     }
   }
 

@@ -95,10 +95,10 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.overlap(this.player, this.hazards, (player, hazard) => {
       if (hazard.armed !== false) player.takeHit(1);
     });
-    // Las trampas también dañan enemigos (otorgan puntos y exp igual).
+    // Las trampas dañan enemigos pero sin otorgar puntos.
     this.physics.add.overlap(this.enemies, this.hazards, (enemy, hazard) => {
       if (hazard.hurtsEnemies && hazard.armed !== false && !enemy.dead) {
-        enemy.takeDamage(1);
+        enemy.takeDamage(1, false);
       }
     });
     // Cofres: recolección automática al contacto.
