@@ -36,6 +36,7 @@ export class Pursuer extends Enemy {
 
   update(time) {
     if (this.dead) return;
+    if (this.updateFrost(time)) return;
     if (this.isStaggered(time)) {
       this.body.setVelocity(this.knockVel.x, this.knockVel.y);
       return;

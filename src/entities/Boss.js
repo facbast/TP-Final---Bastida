@@ -40,6 +40,7 @@ export class Boss extends Enemy {
 
   update(time, delta) {
     if (this.dead) return;
+    if (this.updateFrost(time)) return;
     this.contactDamage = this.fightState === 'dash' ? 4 : 1;
     if (this.fightState === 'windup') {
       this.body.setVelocity(0, 0);

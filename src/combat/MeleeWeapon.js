@@ -1,18 +1,18 @@
 import Phaser from 'phaser';
 import { Weapon } from './Weapon.js';
 
-// Arma cuerpo a cuerpo: barrido en arco ("limpiaparabrisas") con la espada.
+// Arma cuerpo a cuerpo: barrido en arco ("limpiaparabrisas") con el dibujo.
 // La hoja barre ±75° alrededor de la dirección de apuntado en 220 ms,
-// con hitbox circular de radio 95 y rastro del arco.
-// Decisiones de usuario (no son reglas del GDD): daño 1, cadencia 400 ms.
-const ARC_RADIUS = 95;
-const BLADE_DIST = 70;
+// con hitbox circular y rastro del arco.
+// Decisiones de usuario (Spec 0003): espada daño 2 cadencia 400 ms.
 const SWEEP = Phaser.Math.DegToRad(75);
-const SWING_TIME = 220;
 
 export class MeleeWeapon extends Weapon {
   constructor(scene, opts = {}) {
-    super(scene, { damage: 1, cooldown: 400, ...opts });
+    super(scene, { damage: 2, cooldown: 400, ...opts });
+    this.blade = opts.blade ?? 'weapon-longsword';
+    this.range = opts.range ?? 95;
+    this.duration = opts.duration ?? 220;
   }
 
   attack(attacker, facing, time) {
@@ -21,7 +21,7 @@ export class MeleeWeapon extends Weapon {
     const s = this.scene;
     const baseAngle = Math.atan2(facing.y, facing.x);
 
-    const zone = s.add.circle(attacker.x, attacker.y, ARC_RADIUS, 0xffffff, 0);
+    const zone = s.add.circle(attacker.x, attacker.y, this.range, 0xffffff, 0);
     s.physics.add.existing(zone);
     zone.body.setImmovable(true);
     const hit = new Set();
@@ -40,18 +40,19 @@ export class MeleeWeapon extends Weapon {
     }
 
     const arc = s.add.graphics();
-    const blade = s.add.image(attacker.x, attacker.y, 'weapon-longsword').setScale(0.55);
+    const blade = s.add.image(attacker.x, attacker.y, this.blade).setScale(0.55);
+    const bladeDist = Math.max(40, this.range - 25);
     const drawArc = () => {
       arc.clear();
       arc.fillStyle(0xffffff, 0.15);
-      arc.slice(attacker.x, attacker.y, ARC_RADIUS, baseAngle - SWEEP, baseAngle + SWEEP, false);
+      arc.slice(attacker.x, attacker.y, this.range, baseAngle - SWEEP, baseAngle + SWEEP, false);
       arc.fillPath();
     };
     const placeBlade = (t) => {
       const a = baseAngle - SWEEP + t * 2 * SWEEP;
       blade.setPosition(
-        attacker.x + Math.cos(a) * BLADE_DIST,
-        attacker.y + Math.sin(a) * BLADE_DIST,
+        attacker.x + Math.cos(a) * bladeDist,
+        attacker.y + Math.sin(a) * bladeDist,
       );
       blade.setRotation(a + Math.PI / 2);
     };
@@ -63,7 +64,7 @@ export class MeleeWeapon extends Weapon {
     s.tweens.add({
       targets: swing,
       t: 1,
-      duration: SWING_TIME,
+      duration: this.duration,
       onUpdate: () => {
         // El barrido sigue al jugador (ya no se queda atascado en dash).
         zone.body.reset(attacker.x, attacker.y);

@@ -17,10 +17,37 @@ export class Enemy extends Phaser.GameObjects.Triangle {
     this.knockUntil = 0;
     // Daño por contacto en mitades (base: medio corazón).
     this.contactDamage = 1;
+    this.dropType = null;
+    this.frozenUntil = 0;
   }
 
   isStaggered(time) {
     return time < this.knockUntil;
+  }
+
+  isFrozen(time) {
+    return time < this.frozenUntil;
+  }
+
+  // Congelado: quieto con tinte helado hasta el vencimiento.
+  // Los triángulos son Shapes (sin setTint): se usa fillStyle.
+  freeze(duration = 2000) {
+    this.frozenUntil = this.scene.time.now + duration;
+    this.wasFrozen = true;
+    this.setFillStyle(0x99eeff);
+  }
+
+  // Devuelve true si está congelado (detiene e ignora la IA).
+  updateFrost(time) {
+    if (!this.isFrozen(time)) {
+      if (this.wasFrozen) {
+        this.wasFrozen = false;
+        this.setFillStyle(this.baseColor);
+      }
+      return false;
+    }
+    this.body.setVelocity(0, 0);
+    return true;
   }
 
   // Empujón con aturdido breve: la IA no lo sobrescribe mientras dura.
@@ -45,6 +72,7 @@ export class Enemy extends Phaser.GameObjects.Triangle {
       this.dead = true;
       for (const attachment of this.attachments) attachment.destroy?.();
       this.onDeath();
+      if (this.dropType) this.scene.dropWeapon?.(this.x, this.y, this.dropType);
       if (award) this.scene.onEnemyKilled(this);
       else this.destroy();
     }

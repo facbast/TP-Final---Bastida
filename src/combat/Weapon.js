@@ -1,10 +1,13 @@
 // Estrategia base de arma (patrón Strategy): cada arma define cómo atacar.
-// Daño base 1 y cadencia 400 ms (decisión de usuario, paso 1; no es regla del GDD).
+// chargeTime > 0: mantener el ataque carga un disparo especial.
+// autoFire: dispara sola mientras el ataque se mantiene.
 export class Weapon {
   constructor(scene, { damage = 1, cooldown = 400 } = {}) {
     this.scene = scene;
     this.damage = damage;
     this.cooldown = cooldown;
+    this.chargeTime = 0;
+    this.autoFire = false;
     this.lastAttack = -Infinity;
   }
 
@@ -19,4 +22,6 @@ export class Weapon {
   attack(attacker, facing, time) {
     throw new Error('Weapon.attack debe implementarse en la subclase');
   }
+
+  releaseCharge() {}
 }

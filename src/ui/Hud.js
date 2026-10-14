@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { SCORE_NEXT } from '../balance.js';
+import { WEAPON_NAMES } from '../combat/arsenal.js';
 
 // HUD fijo en cámara: corazones geométricos (rojo = entero,
 // naranja = medio, gris = vacío) y contador de vidas.
@@ -19,6 +20,9 @@ export class Hud {
       .setScrollFactor(0);
     this.scoreText = scene.add
       .text(16, 88, '', { fontFamily: 'monospace', fontSize: '16px', color: '#ffd75e' })
+      .setScrollFactor(0);
+    this.weaponText = scene.add
+      .text(16, 110, '', { fontFamily: 'monospace', fontSize: '16px', color: '#ffffff' })
       .setScrollFactor(0);
     // Barra del jefe (paso 10): solo visible durante su pelea.
     this.bossBg = scene.add.rectangle(640, 26, 404, 22, 0x000000, 0.6).setScrollFactor(0);
@@ -76,6 +80,7 @@ export class Hud {
     this.livesText.setText(`Vidas: ${this.player.lives}`);
     this.levelText.setText(`Nivel: ${this.scene.level ?? 1} PJ:${this.scene.run?.playerLevel ?? 1}`);
     this.scoreText.setText(`Puntos: ${this.scene.run?.score ?? 0}/${SCORE_NEXT}`);
+    this.weaponText.setText(`Arma: ${WEAPON_NAMES[this.player.weaponType] ?? '?'}`);
   }
 
   setBossVisible(visible) {

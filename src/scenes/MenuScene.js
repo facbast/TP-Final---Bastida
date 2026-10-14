@@ -28,6 +28,7 @@ export class MenuScene extends Phaser.Scene {
       'Flechas: moverse (Este = derecha)',
       'Z: dash (mantené para más distancia)   X: ataque   C: interactuar',
       '1/2/3: elegir bonificación al subir de nivel',
+      'Shift/M: mapa del piso',
     ];
     controls.forEach((line, i) => {
       this.add

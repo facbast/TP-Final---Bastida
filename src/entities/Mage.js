@@ -16,6 +16,7 @@ const STAFF_COOLDOWN = 1500;
 export class Mage extends Enemy {
   constructor(scene, x, y) {
     super(scene, x, y, { hp: 5, score: 40, color: 0x3388ff, size: 34 });
+    this.dropType = 'staff';
     // Aura helada visible: círculo del radio de ralentización.
     this.aura = scene.add.circle(x, y, SLOW_RADIUS, 0x66bbff, 0.1);
     this.auraRing = scene.add.graphics();
@@ -29,6 +30,7 @@ export class Mage extends Enemy {
     this.auraRing.clear();
     this.auraRing.lineStyle(2, 0x66bbff, 0.35);
     this.auraRing.strokeCircle(this.x, this.y, SLOW_RADIUS);
+    if (this.updateFrost(time)) return;
     if (this.isStaggered(time)) {
       this.body.setVelocity(this.knockVel.x, this.knockVel.y);
       return;

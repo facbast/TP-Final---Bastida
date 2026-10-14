@@ -3,9 +3,10 @@ import { Player } from '../entities/Player.js';
 import { Hud } from '../ui/Hud.js';
 import { createEnemy } from '../entities/EnemyFactory.js';
 import { generateDungeon } from '../dungeon/Dungeon.js';
-import { DungeonBuilder } from '../dungeon/DungeonBuilder.js';
+import { DungeonBuilder, CELL } from '../dungeon/DungeonBuilder.js';
 import { ExitPortal } from '../dungeon/ExitPortal.js';
 import { Treasure } from '../entities/Treasure.js';
+import { WeaponPickup } from '../entities/WeaponPickup.js';
 import { SpikeTrap } from '../entities/SpikeTrap.js';
 import { TimedSpikes } from '../entities/TimedSpikes.js';
 import { SCORE_NEXT, compositionFor } from '../balance.js';
@@ -138,7 +139,11 @@ export class GameScene extends Phaser.Scene {
     this.hud = new Hud(this, this.player);
     this.hud.refresh();
     this.minimap = new Minimap(this);
-    this.minimap.rebuild(built.width, built.height, this.walls);
+    this.minimap.rebuild(built.width, built.height, this.walls, {
+      cols: dungeon.cols,
+      rows: dungeon.rows,
+      cell: CELL,
+    });
     this.minimap.update(0);
     this.gameEnded = false;
     this.transitioning = false;
@@ -213,6 +218,11 @@ export class GameScene extends Phaser.Scene {
     this.run.totalScore += enemy.score;
     this.hud?.refresh();
     this.checkLevelUp();
+  }
+
+  // Los dueños de armas las sueltan al morir (Spec 0003).
+  dropWeapon(x, y, type) {
+    this.interactables.add(new WeaponPickup(this, x, y, type));
   }
 
   // El jefe deja el portal de victoria donde muere (decisión paso 9).
@@ -377,6 +387,7 @@ export class GameScene extends Phaser.Scene {
           maxHearts: this.player.health.maxHearts,
           speedMul: this.player.speedMul,
           dashCdMul: this.player.dashCdMul,
+          weaponType: this.player.weaponType,
         },
       });
     });

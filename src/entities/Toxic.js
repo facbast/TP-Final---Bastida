@@ -13,7 +13,7 @@ export class Toxic extends BasicChicken {
 
   update(time, delta) {
     super.update(time, delta);
-    if (this.dead || this.isStaggered(time)) return;
+    if (this.dead || this.isFrozen(time) || this.isStaggered(time)) return;
     if (time >= this.nextDrip) {
       this.nextDrip = time + DRIP_EVERY;
       const puddle = new ToxinPuddle(this.scene, this.x, this.y);

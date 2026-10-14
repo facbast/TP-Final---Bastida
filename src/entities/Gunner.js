@@ -21,6 +21,7 @@ export class Gunner extends Enemy {
     // Arco del asset: apunta siempre al jugador (indicador de puntería).
     this.bow = scene.add.image(x, y, 'weapon-bow').setScale(0.35);
     this.attachments.push(this.bow);
+    this.dropType = 'bow';
     this.nextShot = 0;
     this.strafeDir = 1;
     this.strafeAt = 0;
@@ -28,6 +29,7 @@ export class Gunner extends Enemy {
 
   update(time) {
     if (this.dead) return;
+    if (this.updateFrost(time)) return;
     if (this.isStaggered(time)) {
       this.body.setVelocity(this.knockVel.x, this.knockVel.y);
       return;

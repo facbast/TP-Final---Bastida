@@ -317,6 +317,21 @@ No presentar propuestas como funcionalidades implementadas.
 ## Flujo esperado para futuras implementaciones
 
 revisar documentación → analizar impacto → aclarar dudas →
-confirmar recursos gráficos cuando corresponda → definir y crear rama →
-diseñar y reutilizar → implementar → verificar →
-solicitar confirmación → commit → push.
+registrar spec en Borrador (sección 12) → confirmar recursos gráficos cuando
+corresponda → definir y crear rama → diseñar y reutilizar → implementar →
+verificar → solicitar confirmación → marcar spec como Implementado →
+commit → push.
+
+## 12. Registrar modificaciones en Spec/
+
+Toda modificación funcional del juego se registra en la carpeta `Spec/`
+(convenciones y plantilla en `Spec/README.md`):
+
+1. Antes de implementar: crear `Spec/NNNN-titulo.md` en estado **Borrador**
+   con requisito, documentación, decisiones, alcance y criterios de aceptación.
+2. Si al redactar el borrador hay dudas que afecten el alcance, usar la
+   herramienta de preguntas (`question`) para delimitarlo antes de implementar.
+3. Implementar y verificar contra esos criterios.
+4. Al recibir la aceptación del usuario: pasar la spec a **Implementado**
+   (fecha + commit) y recién entonces hacer commit y push.
+5. Nunca editar una spec Implementada; un cambio posterior abre una spec nueva.

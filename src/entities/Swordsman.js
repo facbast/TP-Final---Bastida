@@ -16,6 +16,7 @@ export class Swordsman extends BasicChicken {
     super(scene, x, y, { hp: 4, score: 30, color: 0xffdd22, size: 32 });
     this.sword = new OrbitSword(scene, this);
     this.attachments.push(this.sword);
+    this.dropType = 'sword';
     this.swordState = 'wander';
     this.dashAt = 0;
     this.dashUntil = 0;
@@ -25,6 +26,7 @@ export class Swordsman extends BasicChicken {
 
   update(time, delta) {
     if (this.dead) return;
+    if (this.updateFrost(time)) return;
     if (this.isStaggered(time)) {
       this.body.setVelocity(this.knockVel.x, this.knockVel.y);
       this.sword.update(time, delta);

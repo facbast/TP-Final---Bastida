@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { MeleeWeapon } from '../combat/MeleeWeapon.js';
+import { createPlayerWeapon } from '../combat/arsenal.js';
 import { Health } from './Health.js';
 
 // Jugador: cuadrado azul (GDD, Controles del jugador, p. 2).
@@ -29,6 +29,9 @@ export class Player extends Phaser.GameObjects.Rectangle {
     this.moveDir = new Phaser.Math.Vector2(0, 0);
     this.health = new Health(snapshot.maxHearts ?? 3);
     this.lives = snapshot.lives ?? 3;
+    this.weaponType = snapshot.weaponType ?? 'sword';
+    this.weapon = createPlayerWeapon(scene, this.weaponType);
+    this.chargeStart = 0;
     this.speedMul = snapshot.speedMul ?? 1;
     this.dashCdMul = snapshot.dashCdMul ?? 1;
     this.moveSpeed = SPEED * this.speedMul;
@@ -42,7 +45,6 @@ export class Player extends Phaser.GameObjects.Rectangle {
         this.health.maxHalves,
       );
     }
-    this.weapon = new MeleeWeapon(scene);
     this.dashUntil = 0;
     this.dashMaxUntil = 0;
     this.dashReadyAt = 0;
@@ -114,11 +116,39 @@ export class Player extends Phaser.GameObjects.Rectangle {
     this.setFillStyle(this.isSlowed(time) ? 0x66bbff : 0x0000ff);
 
     if (Phaser.Input.Keyboard.JustDown(attack)) {
+      this.chargeStart = time;
       this.weapon.attack(this, this.facing.clone(), time);
+    }
+    if (attack.isDown && this.weapon.autoFire) {
+      this.weapon.attack(this, this.facing.clone(), time);
+    }
+    if (Phaser.Input.Keyboard.JustUp(attack)) {
+      this.chargeStart = 0;
+    }
+    // Vara: mantener X carga el rayo (titila cada vez más rápido).
+    if (
+      attack.isDown &&
+      this.chargeStart > 0 &&
+      this.weapon.chargeTime > 0 &&
+      !this.isInvulnerable(time)
+    ) {
+      const frac = Math.min((time - this.chargeStart) / this.weapon.chargeTime, 1);
+      this.setAlpha(0.6 + 0.4 * Math.abs(Math.sin(time / (120 - 100 * frac))));
+      if (time - this.chargeStart >= this.weapon.chargeTime) {
+        this.weapon.releaseCharge?.(this, this.facing.clone(), time);
+        this.chargeStart = time;
+      }
     }
     if (Phaser.Input.Keyboard.JustDown(interact)) {
       this.tryInteract();
     }
+  }
+
+  // Equipa un arma del arsenal (Spec 0003): reemplaza la anterior.
+  equipWeapon(type) {
+    this.weaponType = type;
+    this.weapon = createPlayerWeapon(this.scene, type);
+    this.chargeStart = 0;
   }
 
   tryInteract() {
