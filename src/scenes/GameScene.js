@@ -134,6 +134,7 @@ export class GameScene extends Phaser.Scene {
     this.hud = new Hud(this, this.player);
     this.hud.refresh();
     this.gameEnded = false;
+    this.transitioning = false;
     this.levelUpOpen = false;
     this.input.keyboard.on('keydown-ONE', () => this.chooseBonus(0));
     this.input.keyboard.on('keydown-TWO', () => this.chooseBonus(1));
