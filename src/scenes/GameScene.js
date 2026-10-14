@@ -10,6 +10,7 @@ import { SpikeTrap } from '../entities/SpikeTrap.js';
 import { TimedSpikes } from '../entities/TimedSpikes.js';
 import { SCORE_NEXT, compositionFor } from '../balance.js';
 import { getTopScore, saveTopScore } from '../storage.js';
+import { Minimap } from '../ui/Minimap.js';
 import longswordUrl from '../../Assets/weapon_longsword.png';
 import bowUrl from '../../Assets/weapon_bow.png';
 import arrowUrl from '../../Assets/weapon_arrow.png';
@@ -122,10 +123,12 @@ export class GameScene extends Phaser.Scene {
 
     // Nivel 10: en lugar del portal sale el jefe en la sala de salida.
     this.boss = null;
+    this.exitPos = null;
     if (this.level >= 10) {
       this.boss = createEnemy(this, 'boss', built.exit.x, built.exit.y);
       this.enemies.add(this.boss);
     } else {
+      this.exitPos = { x: built.exit.x, y: built.exit.y };
       this.interactables.add(new ExitPortal(this, built.exit.x, built.exit.y));
     }
     this.spawnEnemies(built);
@@ -134,6 +137,9 @@ export class GameScene extends Phaser.Scene {
 
     this.hud = new Hud(this, this.player);
     this.hud.refresh();
+    this.minimap = new Minimap(this);
+    this.minimap.rebuild(built.width, built.height, this.walls);
+    this.minimap.update(0);
     this.gameEnded = false;
     this.transitioning = false;
     this.levelUpOpen = false;
@@ -212,6 +218,7 @@ export class GameScene extends Phaser.Scene {
   // El jefe deja el portal de victoria donde muere (decisión paso 9).
   onBossDefeated(x, y) {
     this.boss = null;
+    this.exitPos = { x, y };
     this.interactables.add(new ExitPortal(this, x, y, { toVictory: true }));
   }
 
@@ -385,6 +392,7 @@ export class GameScene extends Phaser.Scene {
       hazard.update?.(time, delta);
     }
     this.hud.refreshBoss();
+    this.minimap.update(time);
     this.updateCameraLookahead();
   }
 
