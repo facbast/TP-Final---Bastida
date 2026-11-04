@@ -1,6 +1,15 @@
 import Phaser from 'phaser';
 import { SCORE_NEXT } from '../balance.js';
-import { WEAPON_NAMES } from '../combat/arsenal.js';
+import { getPhrase } from '../services/translations.js';
+import { KEYS } from '../enums/keys.js';
+
+// HUD fijo en cámara: corazones geométricos, vidas, nivel, puntos, arma,
+// barra del jefe y minimapa. Los textos visibles se resuelven con getPhrase.
+const WEAPON_KEYS = {
+  sword: KEYS.ESPADA,
+  bow: KEYS.ARCO,
+  staff: KEYS.VARA,
+};
 
 // HUD fijo en cámara: corazones geométricos (rojo = entero,
 // naranja = medio, gris = vacío) y contador de vidas.
@@ -31,7 +40,7 @@ export class Hud {
       .setOrigin(0, 0.5)
       .setScrollFactor(0);
     this.bossLabel = scene.add
-      .text(640, 54, 'POLLO MORADO', {
+      .text(640, 54, getPhrase(KEYS.POLLO_MORADO), {
         fontFamily: 'monospace',
         fontSize: '14px',
         color: '#d9a0ff',
@@ -77,10 +86,14 @@ export class Hud {
     for (let i = 0; i < this.heartImgs.length; i += 1) {
       this.heartImgs[i].setTexture(`heart-${this.player.health.stateOf(i)}`);
     }
-    this.livesText.setText(`Vidas: ${this.player.lives}`);
-    this.levelText.setText(`Nivel: ${this.scene.level ?? 1} PJ:${this.scene.run?.playerLevel ?? 1}`);
+    this.livesText.setText(`${getPhrase(KEYS.VIDAS)}: ${this.player.lives}`);
+    this.levelText.setText(
+      `${getPhrase(KEYS.NIVEL)}: ${this.scene.level ?? 1} ${getPhrase(KEYS.PJ)}:${this.scene.run?.playerLevel ?? 1}`,
+    );
     this.scoreText.setText(`Puntos: ${this.scene.run?.score ?? 0}/${SCORE_NEXT}`);
-    this.weaponText.setText(`Arma: ${WEAPON_NAMES[this.player.weaponType] ?? '?'}`);
+    this.weaponText.setText(
+      `${getPhrase(KEYS.ARMA)}: ${getPhrase(WEAPON_KEYS[this.player.weaponType] ?? KEYS.ESPADA)}`,
+    );
   }
 
   setBossVisible(visible) {

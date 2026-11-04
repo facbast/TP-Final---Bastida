@@ -1,4 +1,4 @@
-import { DE, EN, ES, PT } from "../enums/languages";
+import { EN, ES } from "../enums/languages";
 
 const PROJECT_ID = "4fe9e02e-5d51-4c3b-8aba-9cb2a1e10b88";
 let translations = null;
@@ -42,7 +42,7 @@ export function getPhrase(key) {
 }
 
 function isAllowedLanguage(language) {
-  const allowedLanguages = [ES, EN, PT, DE];
+  const allowedLanguages = [ES, EN];
   return allowedLanguages.includes(language);
 }
 

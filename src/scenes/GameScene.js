@@ -12,6 +12,8 @@ import { TimedSpikes } from '../entities/TimedSpikes.js';
 import { SCORE_NEXT, compositionFor } from '../balance.js';
 import { getTopScore, saveTopScore } from '../storage.js';
 import { Minimap } from '../ui/Minimap.js';
+import { getPhrase } from '../services/translations.js';
+import { KEYS } from '../enums/keys.js';
 import longswordUrl from '../../Assets/weapon_longsword.png';
 import bowUrl from '../../Assets/weapon_bow.png';
 import arrowUrl from '../../Assets/weapon_arrow.png';
@@ -25,10 +27,12 @@ const TREASURE_VALUE = 25;
 // Población y trampas: ver compositionFor en balance.js.
 const TRAP_MIN_DIST = 700;
 const EXIT_MIN_DIST = 200;
-const BONUSES = [
-  { label: '1 - Corazón máximo +1 (cura completa)' },
-  { label: '2 - Velocidad +10%' },
-  { label: '3 - Dash recarga 15% más rápido' },
+// Bonificaciones al subir de nivel: textos según idioma (resueltos con
+// getPhrase al abrir el overlay).
+const BONUS_KEYS = [
+  KEYS.TEXT_1_CORAZON_MAXIMO_1_CURA_COMPLETA,
+  KEYS.TEXT_2_VELOCIDAD_10,
+  KEYS.TEXT_3_DASH_RECARGA_15_MAS_RAPIDO,
 ];
 
 export class GameScene extends Phaser.Scene {
@@ -260,7 +264,7 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScrollFactor(0);
     this.add
-      .text(cx, cy + 48, record ? '¡Nuevo récord!' : `Récord: ${top} pts`, {
+      .text(cx, cy + 48, record ? getPhrase(KEYS.NUEVO_RECORD) : `Récord: ${top} pts`, {
         fontFamily: 'monospace',
         fontSize: '22px',
         color: '#ffd75e',
@@ -268,7 +272,7 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScrollFactor(0);
     this.add
-      .text(cx, cy + 96, 'Pulsa R para volver al título', {
+      .text(cx, cy + 96, getPhrase(KEYS.PULSA_R_PARA_VOLVER_AL_TITULO), {
         fontFamily: 'monospace',
         fontSize: '20px',
         color: '#ffffff',
@@ -281,9 +285,9 @@ export class GameScene extends Phaser.Scene {
   onVictory() {
     if (this.gameEnded) return;
     this.finishRun(
-      '¡VICTORIA!',
+      getPhrase(KEYS.VICTORIA),
       '#ffd75e',
-      `Puntos totales: ${this.run.totalScore}  Nivel PJ: ${this.run.playerLevel}`,
+      `${getPhrase(KEYS.PUNTOS_TOTALES)} ${this.run.totalScore}  ${getPhrase(KEYS.NIVEL_PJ)} ${this.run.playerLevel}`,
     );
   }
 
@@ -334,18 +338,21 @@ export class GameScene extends Phaser.Scene {
     const cy = cam.height / 2;
     this.bonusUI = this.add.container(0, 0);
     const bg = this.add.rectangle(cx, cy, cam.width, cam.height, 0x000000, 0.7);
+    const titlePhrase = getPhrase(KEYS.NIVEL_NUMERO_ELIGE_BONFICACION)
+      .replaceAll('[NUMERO]', this.run.playerLevel)
+      .replaceAll('[NUMBER]', this.run.playerLevel);
     const title = this.add
-      .text(cx, cy - 80, `¡Nivel ${this.run.playerLevel}! Elige bonificación`, {
+      .text(cx, cy - 80, titlePhrase, {
         fontFamily: 'monospace',
         fontSize: '24px',
         color: '#ffd75e',
       })
       .setOrigin(0.5);
     this.bonusUI.add([bg, title]);
-    BONUSES.forEach((bonus, i) => {
+    BONUS_KEYS.forEach((key, i) => {
       this.bonusUI.add(
         this.add
-          .text(cx, cy + i * 36, bonus.label, {
+          .text(cx, cy + i * 36, getPhrase(key), {
             fontFamily: 'monospace',
             fontSize: '20px',
             color: '#ffffff',
@@ -418,6 +425,6 @@ export class GameScene extends Phaser.Scene {
 
   onGameOver() {
     if (this.gameEnded) return;
-    this.finishRun('GAME OVER', '#ff3355', `Puntos totales: ${this.run.totalScore}`);
+    this.finishRun('GAME OVER', '#ff3355', `${getPhrase(KEYS.PUNTOS_TOTALES)} ${this.run.totalScore}`);
   }
 }
