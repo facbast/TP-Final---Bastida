@@ -1,6 +1,7 @@
 # Spec 0004 — Integración de Traducila
 
-- Estado: Borrador
+- Estado: Implementado
+- Commit: b9d7e47
 - Requisito: integrar Traducila oficial en el juego
   (project Rouge Egg, id 4fe9e02e-5d51-4c3b-8aba-9cb2a1e10b88), descargando el
   archivo oficial sin reconstruirlo y adaptando únicamente el proyecto.
@@ -9,4 +10,4 @@
   `status.js`, `MenuScene.js`, `Hud.js`, `GameScene.js`.
 - Aceptación: menú y HUD renderizan con getPhrase(KEYS); ES funciona sin red;
   EN consulta la API y actualiza; build OK.
-- Commit: pendiente
+- Fecha de implementación: 2026-11-04
