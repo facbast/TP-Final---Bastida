@@ -64,7 +64,9 @@ export class MenuScene extends Phaser.Scene {
         fontSize: '26px',
         color: '#33ff88',
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+    start.on('pointerdown', () => this.begin());
     const top = getTopScore();
     if (top > 0) {
       this.add
@@ -96,7 +98,6 @@ export class MenuScene extends Phaser.Scene {
       repeat: -1,
     });
     this.input.keyboard.on('keydown-ENTER', () => this.begin());
-    this.input.on('pointerdown', () => this.begin());
   }
 
   begin() {
